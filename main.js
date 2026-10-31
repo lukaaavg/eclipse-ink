@@ -633,8 +633,6 @@ const ETIQUETAS_ZONA = GRUPO_ZONA;
 /* ---------- Almacenamiento ---------- */
 const GUARDAR = {
     fecha: 'eclipse:fecha-sesion',
-    foto: 'eclipse:foto',
-    fotoFecha: 'eclipse:foto-fecha',
     frecuencia: 'eclipse:frecuencia',
     ultimoAviso: 'eclipse:ultimo-aviso',
 };
@@ -805,94 +803,6 @@ if (dayEl && trackEl) {
     }
 
     pintarEstado();
-}
-
-
-/* ---------- Foto de progreso ---------- */
-const photoForm = document.querySelector('#photo-form');
-const photoInput = document.querySelector('#tattoo-image');
-const photoPreview = document.querySelector('#photo-preview');
-const photoImg = document.querySelector('#photo-img');
-const photoDate = document.querySelector('#photo-date');
-const photoRemove = document.querySelector('#photo-remove');
-
-if (photoForm && photoPreview && photoImg) {
-    function pintarFoto() {
-        const datos = leer(GUARDAR.foto);
-        if (!datos || !datos.imagen) {
-            photoPreview.hidden = true;
-            return;
-        }
-        photoImg.src = datos.imagen;
-        photoDate.textContent = datos.fecha ? fechaLarga(datos.fecha) : '';
-        photoPreview.hidden = false;
-    }
-
-    /* Antes de guardar se achica la imagen: localStorage tiene un
-       límite (~5 MB) y una foto de teléfono lo desborda enseguida. */
-    function achicarImagen(file, maxLado = 1000, calidad = 0.82) {
-        return new Promise((resolve, reject) => {
-            const lector = new FileReader();
-            lector.onerror = () => reject(new Error('No se pudo leer el archivo'));
-            lector.onload = () => {
-                const img = new Image();
-                img.onerror = () => reject(new Error('El archivo no es una imagen válida'));
-                img.onload = () => {
-                    const escala = Math.min(1, maxLado / Math.max(img.width, img.height));
-                    const w = Math.max(1, Math.round(img.width * escala));
-                    const h = Math.max(1, Math.round(img.height * escala));
-
-                    const lienzo = document.createElement('canvas');
-                    lienzo.width = w;
-                    lienzo.height = h;
-
-                    const ctx = lienzo.getContext('2d');
-                    ctx.fillStyle = '#0A0A0A';
-                    ctx.fillRect(0, 0, w, h);
-                    ctx.drawImage(img, 0, 0, w, h);
-
-                    resolve(lienzo.toDataURL('image/jpeg', calidad));
-                };
-                img.src = lector.result;
-            };
-            lector.readAsDataURL(file);
-        });
-    }
-
-    photoForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const archivo = photoInput.files && photoInput.files[0];
-        if (!archivo) return;
-
-        const boton = photoForm.querySelector('button[type="submit"]');
-        boton.disabled = true;
-        boton.textContent = 'Guardando…';
-
-        try {
-            const imagen = await achicarImagen(archivo);
-            const ok = escribir(GUARDAR.foto, { imagen, fecha: hoyISO() });
-            if (ok) {
-                pintarFoto();
-                photoForm.reset();
-            } else {
-                alert('No se pudo guardar: el navegador no tiene espacio libre para la imagen.');
-            }
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            boton.disabled = false;
-            boton.textContent = 'Guardar fotografía';
-        }
-    });
-
-    if (photoRemove) {
-        photoRemove.addEventListener('click', () => {
-            borrar(GUARDAR.foto);
-            pintarFoto();
-        });
-    }
-
-    pintarFoto();
 }
 
 
