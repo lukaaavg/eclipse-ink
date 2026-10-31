@@ -1,0 +1,14 @@
+{
+  "name": "eclipse-ink",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sitio de Eclipse Ink — tatuajes, portfolio y seguimiento de curación",
+  "scripts": {
+    "start": "node servidor-local.js",
+    "dev": "node servidor-local.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

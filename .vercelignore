@@ -1,0 +1,17 @@
+# Lo mismo que .gitignore, pero para el deploy.
+# Vercel sube todo lo que no esté acá, así que esto evita subir
+# 25 MB de backups que nadie necesita.
+
+_originales/
+foto1.jpg
+foto2.jpg
+foto3.jpg
+assets/
+_*.html
+servidor-local.js
+node_modules/
+.git/
+.env
+.env.local
+.vscode/
+*.log

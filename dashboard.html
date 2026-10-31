@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi seguimiento | Eclipse Ink</title>
+    <meta name="description" content="Seguimiento de curación de tu tatuaje: estado, cuidados, registro visual, diario de síntomas y estimación de presupuesto.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Eclipse Ink">
+    <meta property="og:title" content="Mi seguimiento — Eclipse Ink">
+    <meta property="og:description" content="Seguimiento de curación de tu tatuaje: estado, cuidados, registro visual, diario de síntomas y estimación de presupuesto.">
+    <meta property="og:image" content="og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html">
+                    <img src="./logo-simplificado.png" alt="LOGO">
+                </a>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Abrir Menú" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul id="navMenu">
+                    <li><a href="portfolio.html">Portfolio</a></li>
+                    <li><a href="index.html#faq">Preguntas y Respuestas</a></li>
+                    <li><a href="contacto.html#contacto-directo">Contact</a></li>
+                    <li><a href="dashboard.html">Seguimiento</a></li>
+                    <li><a href="dashboard.html#budget-calculator">Calculadora</a></li>
+                    <li class="nav-socials">
+                        <a href="https://instagram.com/eclipseink.tt" target="_blank" rel="noopener" aria-label="Instagram">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="igGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#FEDA75"/>
+            <stop offset="25%" stop-color="#FA7E1E"/>
+            <stop offset="50%" stop-color="#D62976"/>
+            <stop offset="75%" stop-color="#962FBF"/>
+            <stop offset="100%" stop-color="#4F5BD5"/>
+        </linearGradient>
+    </defs>
+    <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#igGradient)" stroke-width="1.6"/>
+    <circle cx="12" cy="12" r="4.2" stroke="url(#igGradient)" stroke-width="1.6"/>
+    <circle cx="17.4" cy="6.6" r="1.1" fill="url(#igGradient)"/>
+</svg>
+                        </a>
+                        <a href="https://wa.me/5493743614667" target="_blank" rel="noopener" aria-label="WhatsApp">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.7-1.2A9 9 0 1 0 12 3Z" stroke="#25D366" stroke-width="1.6" stroke-linejoin="round"/>
+                                <path d="M8.3 8.6c.2-.5.5-.5.7-.5h.5c.2 0 .4 0 .6.4.2.5.7 1.7.7 1.8.1.1.1.3 0 .4-.1.2-.2.3-.3.4-.1.1-.3.3-.4.4-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.5 1.5.2.1.4.1.5-.1.1-.1.5-.6.7-.8.1-.2.3-.2.5-.1.2.1 1.5.7 1.7.8.2.1.3.2.4.3 0 .2 0 .8-.3 1.3-.3.5-1.4 1-2 1-.5.1-1.1.1-3.5-.7-3-1.1-4.8-4.1-4.9-4.3-.1-.2-1-1.3-1-2.6 0-1.2.6-1.8.8-2Z" fill="#25D366"/>
+                            </svg>
+                        </a>
+                    </li>
+                </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="dashboard-intro" class="starfield depth depth-cool">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>01 // TU TATTOO</span>
+                <h1>Mi seguimiento</h1>
+                <p>Seguimiento personalizado del proceso de curación de tu tatuaje.</p>
+            </div>
+        </section>
+
+        <section id="estado-curacion" class="starfield depth depth-deep">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>02 // ESTADO ACTUAL</span>
+                <h2>Estado de curación</h2>
+                <p>Contando desde el día de tu sesión, el rastro de fases muestra en qué etapa está tu tatuaje.</p>
+            </div>
+            <article class="healing-status">
+                <div class="healing-status-top">
+                    <div class="healing-counter">
+                        <span>DÍA</span>
+                        <strong id="healingDay">—</strong>
+                        <span>/ 30</span>
+                    </div>
+                    <div class="healing-info">
+                        <h3 id="healingStage">Cargando estado</h3>
+                        <p id="healingMessage">Indicá la fecha de tu sesión para ver el seguimiento.</p>
+                    </div>
+                </div>
+
+                <div class="healing-track" id="healingTrack">
+                    <div class="healing-phase">
+                        <svg viewBox="0 0 32 32" class="moon-icon"><g><circle class="ring" cx="16" cy="16" r="15"/></g></svg>
+                        <span>01</span>
+                    </div>
+                    <div class="healing-phase">
+                        <svg viewBox="0 0 32 32" class="moon-icon"><g><path class="lit" d="M 16,1 A 15,15 0 0 1 16,31 A 7.5,15 0 0 0 16,1 Z"/><circle class="ring" cx="16" cy="16" r="15"/></g></svg>
+                        <span>02</span>
+                    </div>
+                    <div class="healing-phase">
+                        <svg viewBox="0 0 32 32" class="moon-icon"><g><path class="lit" d="M 16,1 A 15,15 0 0 1 16,31 A 0.0,15 0 0 0 16,1 Z"/><circle class="ring" cx="16" cy="16" r="15"/></g></svg>
+                        <span>03</span>
+                    </div>
+                    <div class="healing-phase">
+                        <svg viewBox="0 0 32 32" class="moon-icon"><g><path class="lit" d="M 16,1 A 15,15 0 0 1 16,31 A 7.5,15 0 0 1 16,1 Z"/><circle class="ring" cx="16" cy="16" r="15"/></g></svg>
+                        <span>04</span>
+                    </div>
+                    <div class="healing-phase">
+                        <svg viewBox="0 0 32 32" class="moon-icon"><g><circle class="lit" cx="16" cy="16" r="15"/><circle class="ring" cx="16" cy="16" r="15"/></g></svg>
+                        <span>05</span>
+                    </div>
+                    <div class="healing-phase">
+                        <svg viewBox="0 0 32 32" class="moon-icon"><g transform="translate(32,0) scale(-1,1)"><path class="lit" d="M 16,1 A 15,15 0 0 1 16,31 A 7.5,15 0 0 1 16,1 Z"/><circle class="ring" cx="16" cy="16" r="15"/></g></svg>
+                        <span>06</span>
+                    </div>
+                    <div class="healing-phase">
+                        <svg viewBox="0 0 32 32" class="moon-icon"><g transform="translate(32,0) scale(-1,1)"><path class="lit" d="M 16,1 A 15,15 0 0 1 16,31 A 0.0,15 0 0 0 16,1 Z"/><circle class="ring" cx="16" cy="16" r="15"/></g></svg>
+                        <span>07</span>
+                    </div>
+                    <div class="healing-phase">
+                        <svg viewBox="0 0 32 32" class="moon-icon"><g transform="translate(32,0) scale(-1,1)"><path class="lit" d="M 16,1 A 15,15 0 0 1 16,31 A 7.5,15 0 0 0 16,1 Z"/><circle class="ring" cx="16" cy="16" r="15"/></g></svg>
+                        <span>08</span>
+                    </div>
+                </div>
+
+                <div class="session-setup">
+                    <div>
+                        <label for="session-date">Fecha de tu sesión</label>
+                        <input type="date" id="session-date" name="session-date">
+                    </div>
+                    <p class="session-note">Se guarda únicamente en este dispositivo.</p>
+                </div>
+            </article>
+        </section>
+
+        <div class="wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 1200 46" preserveAspectRatio="none">
+                <path d="M0 30 Q150 4 300 30 T600 30 T900 30 T1200 30"/>
+            </svg>
+            <span class="wave-star" style="--x:7%;  --y:20px; --s:3px; --o:.5"
+style="--x:23%; --y:38px; --s:2px; --o:.3"
+style="--x:41%; --y:20px; --s:3px; --o:.42"
+style="--x:58%; --y:40px; --s:2px; --o:.28"
+style="--x:74%; --y:20px; --s:3px; --o:.46"
+style="--x:91%; --y:36px; --s:2px; --o:.34"></span>
+        </div>
+        <section id="healing-timeline" class="starfield depth depth-cool">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>03 // SEGUIMIENTO DEL CURADO</span>
+                <h2>Línea del tiempo</h2>
+                <p>Una referencia general de las diferentes etapas del proceso de curación.</p>
+            </div>
+            <div class="timeline">
+                <article class="timeline-item">
+                    <span class="timeline-day">DÍAS 01-03</span>
+                    <h3>Etapa inicial</h3>
+                    <p>La etapa puede presentar sensibilidad, enrojecimiento leve o sensación de calor.</p>
+                </article>
+                <article class="timeline-item">
+                    <span class="timeline-day">DÍAS 04-07</span>
+                    <h3>Descamación</h3>
+                    <p>Puede aparecer picazón y descamación mientras la piel continúa recuperándose.</p>
+                </article>
+                <article class="timeline-item">
+                    <span class="timeline-day">DÍAS 08-14</span>
+                    <h3>Regeneración</h3>
+                    <p>La piel continúa recuperándose y la apariencia del tatuaje puede cambiar temporalmente.</p>
+                </article>
+                <article class="timeline-item">
+                    <span class="timeline-day">DÍAS 15—30</span>
+                    <h3>Etapa final</h3>
+                    <p>La piel se aproxima progresivamente a su estado habitual.</p>
+                </article>
+            </div>
+        </section>
+
+        <div class="wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 1200 46" preserveAspectRatio="none">
+                <path d="M0 30 Q150 4 300 30 T600 30 T900 30 T1200 30"/>
+            </svg>
+            <span class="wave-star" style="--x:7%;  --y:20px; --s:3px; --o:.5"
+style="--x:23%; --y:38px; --s:2px; --o:.3"
+style="--x:41%; --y:20px; --s:3px; --o:.42"
+style="--x:58%; --y:40px; --s:2px; --o:.28"
+style="--x:74%; --y:20px; --s:3px; --o:.46"
+style="--x:91%; --y:36px; --s:2px; --o:.34"></span>
+        </div>
+        <section id="que-esperar" class="starfield depth depth-deep">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>04 // QUÉ ESPERAR</span>
+                <h2>Normal y señales de alarma</h2>
+                <p>Durante la curación hay cosas que son parte del proceso y otras que conviene mirar.</p>
+            </div>
+            <div class="expect-grid">
+                <div class="care-group">
+                    <h3>Puede ser normal</h3>
+                    <ul class="symptom-list">
+                        <li>Picazón leve</li>
+                        <li>Ardor leve</li>
+                        <li>Enrojecimiento moderado inicialmente</li>
+                        <li>Sensibilidad en la zona</li>
+                        <li>Descamación</li>
+                        <li>Pequeñas costras</li>
+                    </ul>
+                </div>
+                <div class="care-group">
+                    <h3 class="alert">Consultá si aparece</h3>
+                    <ul class="warning-list">
+                        <li>Dolor intenso o que empeora considerablemente</li>
+                        <li>Hinchazón importante</li>
+                        <li>Secreción abundante o inusual</li>
+                        <li>Enrojecimiento que aumenta progresivamente</li>
+                        <li>Fiebre u otros síntomas generales</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="warning-note">
+                Esta información es orientativa y NO constituye un diagnóstico médico. Ante cualquier preocupación, consultá con un profesional de la salud.
+            </p>
+        </section>
+
+        <section id="cuidados" class="starfield depth depth-cool">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>05 // CUIDADOS</span>
+                <h2>Antes, después y errores frecuentes</h2>
+                <p>Las recomendaciones que sostienen un buen proceso, antes y después de la sesión.</p>
+            </div>
+            <div class="care-groups">
+                <div class="care-group">
+                    <h3>Antes de tatuarte</h3>
+                    <ul>
+                        <li><strong>Descansá correctamente.</strong> Llegar descansado ayuda a tolerar mejor la sesión.</li>
+                        <li><strong>Mantenete hidratado.</strong> Beber suficiente agua antes favorece una buena hidratación.</li>
+                        <li><strong>Comé antes de la sesión.</strong> Evitá llegar con el estómago vacío.</li>
+                        <li><strong>Vení con ropa cómoda.</strong> Que permita acceder a la zona y no genere fricción.</li>
+                    </ul>
+                </div>
+                <div class="care-group">
+                    <h3>Después de tatuarte</h3>
+                    <ul>
+                        <li><strong>Limpieza.</strong> Seguí las instrucciones dadas después de la sesión.</li>
+                        <li><strong>Hidratación.</strong> Usá únicamente los productos recomendados.</li>
+                        <li><strong>No rasques ni arranques la piel.</strong> Evitá retirar las costras manualmente.</li>
+                        <li><strong>Evitá la fricción.</strong> Procura que nada roce constantemente la zona.</li>
+                    </ul>
+                </div>
+                <div class="care-group">
+                    <h3>Errores frecuentes</h3>
+                    <ul>
+                        <li><strong>Rascar el tatuaje.</strong> Irrita la piel y puede borrar partes del diseño.</li>
+                        <li><strong>Arrancar las costras.</strong> Dejar que la piel se desprenda naturalmente evita lesiones.</li>
+                        <li><strong>Exponerlo innecesariamente.</strong> Seguí las recomendaciones del postoperatorio.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 1200 46" preserveAspectRatio="none">
+                <path d="M0 30 Q150 4 300 30 T600 30 T900 30 T1200 30"/>
+            </svg>
+            <span class="wave-star" style="--x:7%;  --y:20px; --s:3px; --o:.5"
+style="--x:23%; --y:38px; --s:2px; --o:.3"
+style="--x:41%; --y:20px; --s:3px; --o:.42"
+style="--x:58%; --y:40px; --s:2px; --o:.28"
+style="--x:74%; --y:20px; --s:3px; --o:.46"
+style="--x:91%; --y:36px; --s:2px; --o:.34"></span>
+        </div>
+        <section id="tattoo-photo" class="starfield depth depth-deep">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>06 // FOTO DE PROGRESO</span>
+                <h2>Registro visual</h2>
+                <p>Subí una fotografía para registrar visualmente la evolución de tu tatuaje</p>
+            </div>
+            <div class="photo-preview" id="photo-preview" hidden>
+                <img id="photo-img" alt="Registro fotográfico de tu tatuaje">
+                <div class="photo-meta">
+                    <span id="photo-date"></span>
+                    <button type="button" class="ghost-button" id="photo-remove">Quitar fotografía</button>
+                </div>
+            </div>
+            <form id="photo-form">
+                <label for="tattoo-image">
+                    Seleccioná una fotografía
+                </label>
+                <input
+                    type="file"
+                    id="tattoo-image"
+                    name="tattoo-image"
+                    accept="image/*">
+                <button type="submit">Guardar fotografía</button>
+            </form>
+        </section>
+
+        <div class="wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 1200 46" preserveAspectRatio="none">
+                <path d="M0 30 Q150 4 300 30 T600 30 T900 30 T1200 30"/>
+            </svg>
+            <span class="wave-star" style="--x:7%;  --y:20px; --s:3px; --o:.5"
+style="--x:23%; --y:38px; --s:2px; --o:.3"
+style="--x:41%; --y:20px; --s:3px; --o:.42"
+style="--x:58%; --y:40px; --s:2px; --o:.28"
+style="--x:74%; --y:20px; --s:3px; --o:.46"
+style="--x:91%; --y:36px; --s:2px; --o:.34"></span>
+        </div>
+        <section id="symptom-journal" class="starfield depth depth-cool">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>07 // DIARIO</span>
+                <h2>Diario de síntomas</h2>
+                <p>Registrá cómo se siente tu tatuaje para llevar un seguimiento de la curación.</p>
+            </div>
+            <div class="journal-list" id="journal-list"></div>
+            <form id="symptom-form">
+                <label for="symptoms">¿Cómo se siente tu tatuaje?</label>
+                <textarea
+                    id="symptoms"
+                    name="symptoms"
+                    rows="4"
+                    placeholder="Por ejemplo: siento un poco de picazón y ardor leve..."
+                    ></textarea>
+
+                <div class="ai-upload">
+                    <label for="symptom-image">Foto del tatuaje (opcional)</label>
+                    <p class="ai-upload-note">
+                        Subí una foto para que el análisis contraste lo que se ve con lo que
+                        describís. La imagen se envía a un servicio de inteligencia artificial
+                        externo y no se guarda en ningún servidor.
+                    </p>
+                    <div class="ai-upload-controls">
+                        <label for="symptom-image" class="ai-file-label">Elegir imagen</label>
+                        <input type="file" id="symptom-image" accept="image/*">
+                        <button type="button" class="ghost-button" id="symptom-image-remove" hidden>Quitar</button>
+                    </div>
+                    <div class="ai-thumb" id="symptom-thumb" hidden>
+                        <img id="symptom-thumb-img" alt="Foto del tatuaje subida">
+                    </div>
+                </div>
+
+                <button type="submit">Registrar síntomas</button>
+            </form>
+        </section>
+
+        <div class="wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 1200 46" preserveAspectRatio="none">
+                <path d="M0 30 Q150 4 300 30 T600 30 T900 30 T1200 30"/>
+            </svg>
+            <span class="wave-star" style="--x:7%;  --y:20px; --s:3px; --o:.5"
+style="--x:23%; --y:38px; --s:2px; --o:.3"
+style="--x:41%; --y:20px; --s:3px; --o:.42"
+style="--x:58%; --y:40px; --s:2px; --o:.28"
+style="--x:74%; --y:20px; --s:3px; --o:.46"
+style="--x:91%; --y:36px; --s:2px; --o:.34"></span>
+        </div>
+        <section id="symptom-analysis" class="starfield depth depth-deep">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>08 // ANÁLISIS DE PATRONES</span>
+                <h2>Análisis orientativo</h2>
+                <p>El sistema analiza los síntomas registrados y proporciona una orientación inicial basada en patrones</p>
+            </div>
+            <article class="analysis-result" id="analysis-result">
+                <span>RESULTADO</span>
+                <h3 id="analysis-title">Sin análisis disponible</h3>
+                <div class="analysis-tags" id="analysis-tags"></div>
+                <p id="analysis-text">Registrá tus síntomas para obtener una orientación inicial sobre lo que estás experimentando.</p>
+            </article>
+            <p class="analysis-warning">
+                Esta herramienta no realiza diagnósticos médicos ni reemplaza la evaluación de un profesional de la salud.
+            </p>
+        </section>
+
+        <div class="wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 1200 46" preserveAspectRatio="none">
+                <path d="M0 30 Q150 4 300 30 T600 30 T900 30 T1200 30"/>
+            </svg>
+            <span class="wave-star" style="--x:7%;  --y:20px; --s:3px; --o:.5"
+style="--x:23%; --y:38px; --s:2px; --o:.3"
+style="--x:41%; --y:20px; --s:3px; --o:.42"
+style="--x:58%; --y:40px; --s:2px; --o:.28"
+style="--x:74%; --y:20px; --s:3px; --o:.46"
+style="--x:91%; --y:36px; --s:2px; --o:.34"></span>
+        </div>
+        <section id="comms-center" class="starfield depth depth-cool">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>09 // NOTIFICACIONES</span>
+                <h2>Recordatorios</h2>
+                <p>Configurá la frecuencia con la que querés recibir recordatorios relacionados con el cuidado del tatuaje.</p>
+            </div>
+            <form id="notification-form">
+                <label for="notification-frequency">Frecuencia de notificaciones</label>
+                <select id="notification-frequency" name="notification-frequency">
+                    <option value="daily">Diaria</option>
+                    <option value="two-days">Cada 2 días</option>
+                    <option value="weekly">Semanal</option>
+                </select>
+                <button type="submit">Guardar preferencias</button>
+            </form>
+            <div class="reminder-next" id="reminder-next">
+                <span>PRÓXIMO RECORDATORIO</span>
+                <strong id="reminder-text">—</strong>
+            </div>
+        </section>
+
+        <div class="wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 1200 46" preserveAspectRatio="none">
+                <path d="M0 30 Q150 4 300 30 T600 30 T900 30 T1200 30"/>
+            </svg>
+            <span class="wave-star" style="--x:7%;  --y:20px; --s:3px; --o:.5"
+style="--x:23%; --y:38px; --s:2px; --o:.3"
+style="--x:41%; --y:20px; --s:3px; --o:.42"
+style="--x:58%; --y:40px; --s:2px; --o:.28"
+style="--x:74%; --y:20px; --s:3px; --o:.46"
+style="--x:91%; --y:36px; --s:2px; --o:.34"></span>
+        </div>
+        <section id="budget-calculator" class="starfield depth depth-deep">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>10 // ESTIMAR</span>
+                <h2>Calculadora de presupuesto</h2>
+                <p>Obtené una estimación orientativa del precio de un tatuaje según sus características.</p>
+            </div>
+            <form id="budget-form">
+                <fieldset class="scale-picker">
+                    <legend>¿Del tamaño de qué?</legend>
+                    <div class="scale-options">
+                        <label class="scale-option">
+                            <input type="radio" name="tattoo-size" value="mini">
+                            <span class="scale-dot d-moneda"></span>
+                            <span class="scale-text">
+                                <strong>Una moneda</strong>
+                                <em>3-5 cm</em>
+                            </span>
+                        </label>
+                        <label class="scale-option">
+                            <input type="radio" name="tattoo-size" value="pequeno">
+                            <span class="scale-dot d-billetera"></span>
+                            <span class="scale-text">
+                                <strong>Una billetera</strong>
+                                <em>6-8 cm</em>
+                            </span>
+                        </label>
+                        <label class="scale-option">
+                            <input type="radio" name="tattoo-size" value="mediano">
+                            <span class="scale-dot d-palma"></span>
+                            <span class="scale-text">
+                                <strong>Mi palma</strong>
+                                <em>9-12 cm</em>
+                            </span>
+                        </label>
+                        <label class="scale-option">
+                            <input type="radio" name="tattoo-size" value="grande">
+                            <span class="scale-dot d-dos-palmas"></span>
+                            <span class="scale-text">
+                                <strong>Dos palmas</strong>
+                                <em>+12 cm</em>
+                            </span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div class="ai-upload">
+                    <label for="budget-image">Referencia del diseño (opcional)</label>
+                    <p class="ai-upload-note">
+                        Adjuntá una imagen para que el análisis detecte el estilo, los colores de tinta
+                        y el nivel de detalle, y ajuste el rango. Si la foto muestra el tattoo en tu
+                        cuerpo, el rango se hace más preciso. La imagen se envía a un servicio de
+                        inteligencia artificial externo y no se guarda en ningún servidor.
+                    </p>
+                    <div class="ai-upload-controls">
+                        <label for="budget-image" class="ai-file-label">Elegir imagen</label>
+                        <input type="file" id="budget-image" accept="image/*">
+                        <button type="button" class="ghost-button" id="budget-image-remove" hidden>Quitar</button>
+                    </div>
+                    <div class="ai-thumb" id="budget-thumb" hidden>
+                        <img id="budget-thumb-img" alt="Referencia del diseño subida">
+                    </div>
+                </div>
+
+                <button type="submit">Calcular presupuesto</button>
+
+                <div class="detection" id="detection-panel" hidden>
+                    <h4>Lo que detectó el análisis</h4>
+                    <div class="detection-chips" id="detection-chips"></div>
+                    <p class="detection-detail" id="detection-detail" hidden></p>
+                    <div class="detection-overrides">
+                        <div>
+                            <label for="tattoo-style">Estilo</label>
+                            <select id="tattoo-style" name="tattoo-style">
+                                <option value="fineline">Fineline</option>
+                                <option value="rellenado">Rellenado</option>
+                                <option value="mixto">Mixto</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="tattoo-zone">Zona del cuerpo</label>
+                            <select id="tattoo-zone" name="tattoo-zone">
+                                <option value="simple">Simple: antebrazo, pantorrilla, brazo, pierna</option>
+                                <option value="media">Media: muslo, hombro, costado, espalda</option>
+                                <option value="compleja">Compleja: dedos, mano, muñeca, cuello, pecho</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="ai-upload-note" id="detection-note"></p>
+                </div>
+            </form>
+            <article id="budget-result" class="budget-result">
+                <span>RANGO ESTIMADO</span>
+                <strong>$—</strong>
+                <p>Elegí un tamaño y adjuntá una referencia para ver el rango</p>
+            </article>
+            <p class="price-note">
+                Es una estimación: el precio final depende del diseño, del nivel de detalle y
+                del tiempo de sesión. Lo confirma el tatuador antes de empezar.
+            </p>
+            <p class="price-pending" id="price-pending" hidden>
+                Faltan valores en la tabla <code>PRECIOS</code> al principio de <code>main.js</code>.
+            </p>
+        </section>
+
+        <div class="wave-divider" aria-hidden="true">
+            <svg viewBox="0 0 1200 46" preserveAspectRatio="none">
+                <path d="M0 30 Q150 4 300 30 T600 30 T900 30 T1200 30"/>
+            </svg>
+            <span class="wave-star" style="--x:7%;  --y:20px; --s:3px; --o:.5"
+style="--x:23%; --y:38px; --s:2px; --o:.3"
+style="--x:41%; --y:20px; --s:3px; --o:.42"
+style="--x:58%; --y:40px; --s:2px; --o:.28"
+style="--x:74%; --y:20px; --s:3px; --o:.46"
+style="--x:91%; --y:36px; --s:2px; --o:.34"></span>
+        </div>
+        <section id="artist-contact" class="starfield depth depth-cool">
+            <div class="stars"></div>
+            <div class="section-heading">
+                <span>11 // CONTACTO DIRECTO</span>
+                <h2>¿Tenés más dudas?</h2>
+                <p>Si querés despejar una duda sobre tu tatuaje podés comunicarte directamente conmigo.</p>
+            </div>
+            <a href="https://wa.me/5493743614667" target="_blank" rel="noopener noreferrer" class="cta-button" id="contact-artist">Contactar al tatuador</a>
+        </section>
+    </main>
+    <script src="main.js"></script>
+</body>
+</html>

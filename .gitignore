@@ -1,0 +1,28 @@
+# Backups de imagenes originales: solo hacen falta en tu maquina
+_originales/
+
+# Logos originales de la marca: no se usan en el sitio
+assets/
+
+# Fotos originales que ya estan optimizadas en /estudio
+foto1.jpg
+foto2.jpg
+foto3.jpg
+
+# Archivos de prueba y previews
+_*.html
+PLACEHOLDER*/
+
+# Node
+node_modules/
+npm-debug.log*
+.vercel
+.env
+.env.local
+.env.*.local
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
