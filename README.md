@@ -3,6 +3,9 @@
 Sitio de Eclipse Ink — tatuajes en fineline, blackwork y neo tribal.
 Garuhapé, Misiones.
 
+**Producción:** https://eclipse-ink.vercel.app
+**Repositorio:** https://github.com/lukaaavg/eclipse-ink
+
 Sitio estático (HTML + CSS + JS sin framework) con una función
 serverless para el análisis con IA.
 
@@ -28,8 +31,7 @@ servidor-local.js   Servidor para desarrollo. Sirve el sitio y expone
 
 estudio/            Fotos del espacio de trabajo
 tatuajes/           Fotos de tattoos
-assets/             Logos originales (no se usan en el sitio)
-favicon.svg         Ícono
+favicon-*.png       Iconos de la pestaña (sacados de logo-simplificado.png)
 og-image.jpg        Imagen para compartir en redes
 ```
 
@@ -43,56 +45,55 @@ npm start
 
 Abre `http://localhost:8080`.
 
-### Probar la IA real
+### Probar la IA real en local
 
-Sin esto, la calculadora funciona en **modo prueba**: devuelve un
-resultado de ejemplo y lo avisa en pantalla.
-
-```bash
+```powershell
 # PowerShell
 $env:MINIMAX_API_KEY = "sk-..."
 npm start
 ```
 
-Después entrá a `http://localhost:8080/dashboard.html?ia=real`.
-
-Sin la variable, el sitio avisa que está en modo prueba.
+La calculadora usa la IA real por defecto. Con `?ia=mock` en la URL
+fuerza la simulación, para trabajar en la interfaz sin gastar.
 
 ---
 
-## Deploy en Vercel
+## Publicar
 
-1. Subí el proyecto a un repositorio de GitHub.
-   Los archivos pesados (`_originales/`, `foto1-3.jpg`) ya están en
-   `.gitignore`: no subas 25 MB de backups.
+```bash
+npm run deploy
+```
 
-2. Entrá a [vercel.com](https://vercel.com) y conectá el repositorio.
-   Vercel detecta el proyecto solo: no hay build step.
+O a mano:
 
-3. Agregá la variable de entorno:
-   **Settings → Environment Variables → `MINIMAX_API_KEY`**
-   Marcá **Production** y **Preview**. Sin esto la IA no funciona.
+```bash
+git add .
+git commit -m "lo que sea"
+git push              # si el auto-deploy está conectado, publica solo
+vercel --prod --yes   # o subilo directo con el CLI
+```
 
-4. Deploy. Vercel publica el sitio y la función `/api/analizar`
-   queda disponible en el mismo dominio.
+### Variables de entorno
 
-### Después del primer deploy
+Se definen en **Vercel → Project → Settings → Environment Variables**
+(marcando Production y Preview). También funcionan en local exportándolas.
 
-- La calculadora sigue en **modo prueba** hasta que en `main.js`
-  cambie la línea:
+| Variable | Para qué | Obligatoria |
+|---|---|---|
+| `MINIMAX_API_KEY` | La clave de la API | Sí |
+| `MINIMAX_MODELO` | Modelo a usar (por defecto `MiniMax-M3.1-Flash`) | No |
+| `MINIMAX_BASE_URL` | Endpoint (por defecto `https://api.minimax.io/anthropic`) | No |
 
-  ```js
-  const MODO_MOCK = new URLSearchParams(location.search).get('ia') !== 'real';
-  ```
+La clave **nunca va en el código**: vive solo en el servidor.
 
-  Para que en producción use la IA real siempre, reemplazala por:
+### Auto-deploy desde GitHub
 
-  ```js
-  const MODO_MOCK = false;
-  ```
+Requiere instalar la GitHub App de Vercel para el repo:
+**https://vercel.com/account/integrations** → Vercel → Install → elegir
+`eclipse-ink`.
 
-  Si querés poder probarla en local con `?ia=real`, dejala como está
-  y en producción la variable de entorno manda igual.
+Con eso, cada `git push` a `main` publica solo. Sin eso, hay que correr
+`npm run deploy`.
 
 ---
 
@@ -112,25 +113,36 @@ const PRECIOS = {
 
 Los valores son **"desde"**: el precio final lo confirma el tatuador.
 
+Los multiplicadores por zona y por factor están en `INCERTIDUMBRE` y
+`PRECIOS.factores`. El rango que se muestra al cliente se calcula en
+`calcularRango()`.
+
+---
+
+## Cómo funciona el análisis con IA
+
+1. El cliente sube una foto y elige un tamaño (escala visual: moneda,
+   billetera, palma, dos palmas).
+2. La función `/api/analizar` le manda la imagen al modelo con el prompt
+   de `api/analizar.js` (las reglas del tatuador).
+3. El modelo devuelve **datos estructurados**: colores de tinta, estilo,
+   zona, tamaño relativo, factores, nivel.
+4. **El precio lo calcula el sitio**, no el modelo: la tabla de precios
+   por estilo y tamaño, por zona, por factor.
+5. El texto que ve el cliente lo arma el sitio con esos datos, así que
+   nunca puede contradecir el precio.
+
+Si el modelo detecta que la foto **no** muestra piel (una referencia
+suelta), la zona y el tamaño se descartan y el rango se abre, porque no
+hay forma de medirlos.
+
+En el diario de síntomas, el análisis por palabras clave **manda
+siempre**: la IA puede sumar una alerta, nunca levantarla.
+
 ---
 
 ## Dónde se guardan los datos del cliente
 
 En el navegador (`localStorage`), no en ningún servidor. La foto que
-sube el cliente para el análisis **se envía a la API para analizarse y
-no se guarda en ningún lado**.
-
----
-
-## Despliegue con git
-
-```bash
-git init
-git add .
-git commit -m "Eclipse Ink"
-git branch -M main
-git remote add origin https://github.com/TU-USUARIO/REPO.git
-git push -u origin main
-```
-
-Luego en Vercel: **Add New → Project → importá el repo**.
+sube el cliente **se envía a la API para analizarse y no se guarda en
+ningún lado**.

@@ -6,7 +6,8 @@
   "description": "Sitio de Eclipse Ink — tatuajes, portfolio y seguimiento de curación",
   "scripts": {
     "start": "node servidor-local.js",
-    "dev": "node servidor-local.js"
+    "dev": "node servidor-local.js",
+    "deploy": "vercel --prod --yes"
   },
   "engines": {
     "node": ">=18"
