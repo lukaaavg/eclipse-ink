@@ -14,8 +14,11 @@
  * y asociala a Production y Preview.
  */
 
-const MODELO = 'MiniMax-M3.1-Flash';
-const BASE_URL = 'https://api.minimax.io/anthropic';
+/*Configuración por variable de entorno.
+  Si no están definidas, se usan estos valores por defecto, así la
+  función igual anda sin configurar nada.*/
+const MODELO = process.env.MINIMAX_MODELO || 'MiniMax-M3.1-Flash';
+const BASE_URL = process.env.MINIMAX_BASE_URL || 'https://api.minimax.io/anthropic';
 
 /* Los prompts viven acá en el servidor. El navegador nunca los ve.
    Se mantienen sincronizados con los de main.js (PROMPT_PRECIO y

@@ -345,15 +345,15 @@ Si la imagen no es clara o no se ve un tatuaje, poné "consultar": false, "urgen
    ========================================================= */
 
 /*MODO MOCK
-  La IA es simulada por defecto: el sitio funciona completo sin
-  ningún servidor, lo que permite desarrollar y probar el circuito.
+  Por defecto la IA es REAL: el sitio llama a la función y anda
+  siempre, sin tener que agregar nada a la URL.
 
-  Con ?ia=real en la URL se llama a la función de verdad. Eso sirve
-  para probar contra un servidor local antes de publicar.
+  Con ?ia=mock en la URL se fuerza la simulación, que sirve para
+  trabajar en la interfaz sin gastar ni depender del servidor.
 
-  Cuando haya una función deployada, se cambia esta línea a false
-  y listo: la clave sigue sin estar nunca en el navegador.*/
-const MODO_MOCK = new URLSearchParams(location.search).get('ia') !== 'real';
+  Cuando la función esté deployada con MINIMAX_API_KEY configurada,
+  esto puede quedarse en false tranquilamente.*/
+const MODO_MOCK = new URLSearchParams(location.search).get('ia') === 'mock';
 
 /*Endpoint de la función serverless. Acá va SOLO la ruta: la clave de
   la API nunca está en el navegador, vive en el servidor.*/
