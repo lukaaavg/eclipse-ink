@@ -919,8 +919,12 @@ function formatear(valor) {
 
 
 if (budgetForm && styleSelect && zoneSelect && budgetResult) {
-    const strong = budgetResult.querySelector('strong');
-    const desc = budgetResult.querySelector('p');
+    /*El valor y la descripción se toman por id y no por position: el
+      panel tiene un <p> dentro del bloque de carga, y con un
+      querySelector('p') se tomaba ese en vez del texto del
+      resultado.*/
+    const strong = document.querySelector('#budget-value');
+    const desc = document.querySelector('#budget-desc');
     const panel = document.querySelector('#detection-panel');
     const chips = document.querySelector('#detection-chips');
     const detNote = document.querySelector('#detection-note');
@@ -1137,6 +1141,22 @@ if (budgetForm && styleSelect && zoneSelect && budgetResult) {
         }
     }
 
+    /*Muestra u oculta el estado de carga.
+      El botón también cambia: es la señal más importante de que el
+      click se registró, aunque la barra esté fuera de pantalla.*/
+    const panelCarga = document.querySelector('#ai-carga');
+    const botonCalcular = budgetForm.querySelector('button[type="submit"]');
+
+    function mostrarCarga(activo) {
+        if (panelCarga) panelCarga.hidden = !activo;
+        budgetResult.classList.toggle('cargando', activo);
+
+        if (botonCalcular) {
+            botonCalcular.disabled = activo;
+            botonCalcular.textContent = activo ? 'Analizando…' : 'Calcular presupuesto';
+        }
+    }
+
     budgetForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -1162,9 +1182,16 @@ if (budgetForm && styleSelect && zoneSelect && budgetResult) {
         pintarDeteccion();
         pintar();
 
+        /*La respuesta tarda varios segundos. Se avisa: si no, el sitio
+          parece colgado y la gente vuelve a apretar el botón.*/
+        mostrarCarga(true);
+        budgetResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
         const res = await analizarConIA('precio', imagen, {
             tamanoElegido: (ESCALA_TAMANO.find((x) => x.valor === tam) || {}).etiqueta || tam,
         });
+
+        mostrarCarga(false);
 
         if (!res.ok) {
             pintar();
@@ -1181,7 +1208,7 @@ if (budgetForm && styleSelect && zoneSelect && budgetResult) {
 
         /*El resultado queda lejos en la página (o en el celular, fuera de
           pantalla). Lo trayemos a la vista.*/
-        budgetResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        budgetResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 
     /*Si cambian los overrides, se recalcula al instante.*/

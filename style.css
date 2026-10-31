@@ -2291,6 +2291,93 @@ footer{
     }
 }
 
+/*ESTADO DE CARGA DE LA IA
+  La respuesta tarda 3 a 5 segundos. Sin una señal, el sitio parece
+  colgado. La barra va DENTRO del panel del resultado: el usuario ve
+  la señal justo donde va a aparecer la respuesta y la página no
+  salta de lugar. Es indeterminada porque no sabemos cuánto falta:
+  el movimiento dice "está trabajando" sin prometer un tiempo falso.*/
+.budget-result{
+    position: relative;
+}
+.budget-result.cargando{
+    min-height: 190px;
+}
+/*Mientras carga, el resultado anterior se oculta. Asi no se ve el
+  texto viejo por detras de la barra, pase lo que pase con el
+  apilamiento.*/
+.budget-result.cargando > span,
+.budget-result.cargando > strong,
+.budget-result.cargando > p,
+.budget-result.cargando > .price-breakdown,
+.budget-result.cargando > .factor-list,
+.budget-result.cargando > .ai-nota,
+.budget-result.cargando > .ai-error{
+    visibility: hidden;
+}
+.ai-carga{
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+
+    padding: 1.5rem;
+
+    background: #161616;
+    border-radius: 11px;
+}
+.ai-carga[hidden]{
+    display: none;
+}
+.ai-carga-barra{
+    position: relative;
+    width: 190px;
+    height: 2px;
+    overflow: hidden;
+
+    background: #262626;
+    border-radius: 2px;
+}
+.ai-carga-barra span{
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 45%;
+
+    background: linear-gradient(90deg, transparent, #A3DBE1 45%, transparent);
+    animation: barrido 1.15s ease-in-out infinite;
+}
+@keyframes barrido{
+    0%   { transform: translateX(-110%); }
+    100% { transform: translateX(260%); }
+}
+.ai-carga-titulo{
+    color: #A3DBE1;
+    font-size: 0.72rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+}
+.ai-carga-detalle{
+    max-width: 300px;
+    color: #777777;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    text-align: center;
+}
+/*Con movimiento reducido la barra se queda fija: el texto ya dice que
+  está trabajando, no hace falta la animación.*/
+@media (prefers-reduced-motion: reduce){
+    .ai-carga-barra span{
+        animation: none;
+        width: 100%;
+        opacity: 0.5;
+    }
+}
+
 /* ===== RESPONSIVE GLOBAL =====
    Todo lo que se achica al bajar el ancho, en un solo lugar. */
 @media (max-width: 900px){

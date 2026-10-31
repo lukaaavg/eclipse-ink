@@ -390,9 +390,14 @@
                 </div>
             </form>
             <article id="budget-result" class="budget-result">
-                <span>RANGO ESTIMADO</span>
-                <strong>$—</strong>
-                <p>Elegí un tamaño y adjuntá una referencia para ver el rango</p>
+                <div class="ai-carga" id="ai-carga" hidden>
+                    <div class="ai-carga-barra"><span></span></div>
+                    <p class="ai-carga-titulo">Analizando la referencia</p>
+                    <p class="ai-carga-detalle">La IA está mirando el diseño: colores de tinta, rellenos y nivel de detalle.</p>
+                </div>
+                <span>DESDE</span>
+                <strong id="budget-value">$—</strong>
+                <p id="budget-desc">Elegí un tamaño y adjuntá una referencia para ver el rango</p>
             </article>
             <p class="price-note">
                 Es una estimación: el precio final depende del diseño, del nivel de detalle y
