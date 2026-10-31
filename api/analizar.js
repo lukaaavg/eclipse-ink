@@ -21,8 +21,8 @@ const MODELO = process.env.MINIMAX_MODELO || 'MiniMax-M3.1-Flash';
 const BASE_URL = process.env.MINIMAX_BASE_URL || 'https://api.minimax.io/anthropic';
 
 /* Los prompts viven acá en el servidor. El navegador nunca los ve.
-   Se mantienen sincronizados con los de main.js (PROMPT_PRECIO y
-   PROMPT_SINTOMA). Si cambiás las reglas, cambiás los dos lados. */
+   Se mantienen sincronizados con el de main.js (PROMPT_PRECIO).
+   Si cambiás las reglas, cambiás los dos lados. */
 const PROMPT_PRECIO = `Sos un asistente que analiza diseños de tatuaje para un tattoo artist argentino.
 
 Tu trabajo NO es dar un precio. Es DESCRIBIR con precisión el diseño, porque de esa descripción depende el precio.
@@ -170,41 +170,7 @@ NO escribas el campo "nota". Ese campo lo arma el sitio por su cuenta a
 partir de los datos que devuelves. Si lo escribís, se duplica.
 `;
 
-const PROMPT_SINTOMA = `Sos un asistente que ayuda a un tattoo artist a orientar a sus clientes durante la curación de un tatuaje.
 
-NO sos médico y NO hacés diagnósticos. Tu función es OBSERVAR y CLASIFICAR.
-
-Recibís una imagen de un tatuaje en proceso de curación y una descripción escrita por el cliente de cómo se siente.
-
-Lo que se considera NORMAL en una curación (no lo marques como preocupante):
-- Picazón
-- Enrojecimiento leve o piel un poco moretoneada, sobre todo los primeros días u horas
-- Hinchazón: varía mucho según la zona; un rellenado en la mano se hincha muchísimo más que en el antebrazo y eso es esperable
-- Si es un rellenado pesado, es normal que expulsa un poco de tinta o un poco de sangre las primeras horas, antes de que empiece a formar la cáscara
-- Dolor fuerte los primeros dos o tres días en zonas como la mano: es insoportable pero es lo esperado. NO lo marques como preocupante mientras no venga acompañado de otros síntomas.
-
-Lo que NO es normal y hay que consultar:
-- Fiebre
-- Secreciones, pus, o secreción amarillenta/verdosa
-- Infección
-- Síntomas de gripe
-- Dolor que empeora en lugar de mejorar
-- Piel demasiado tirante (suele deberse a poca hidratación del tatuaje, no es una complicación)
-
-Cuando veas uno de estos, marcá "consultar": true y "urgente": true.
-
-Regla para el dolor: si el cliente describe un dolor fuerte, preguntate si el texto menciona fiebre, pus, secreción o empeoramiento. Si NO los menciona, el dolor por sí solo (aunque sea insoportable) NO es motivo de consulta: marcá "consultar": false.
-
-Devolvé SOLO un JSON válido, sin texto alrededor:
-
-{
-  "consultar": true | false,
-  "urgente": true | false,
-  "observaciones": ["qué se ve en la foto", "qué coincide con lo que describe el cliente"],
-  "mensaje": "una o dos frases en español, para el cliente, con tono tranquilo. Si hay que consultar, decí que escriba al tattoo artist. Si todo parece normal, decí que sigue dentro de lo esperado y que siga con los cuidados."
-}
-
-Si la imagen no es clara o no se ve un tatuaje, poné "consultar": false, "urgente": false y en observaciones que la imagen no es interpretable, y que la descripción escrita es la que se está usando.`;
 
 /* ---------- Límites de uso ----------
    Esta función es pública y la clave tiene costo. Sin límites, cualquiera
@@ -465,7 +431,7 @@ export default async function handler(req, res) {
 
     const { tarea, imagen, contexto } = cuerpo || {};
 
-    if (!tarea || !['precio', 'sintoma'].includes(tarea)) {
+    if (!tarea || tarea !== 'precio') {
         return res.status(400).json({ ok: false, error: 'Tarea desconocida' });
     }
 
@@ -483,7 +449,7 @@ export default async function handler(req, res) {
         return res.status(429).json({ ok: false, error: 'Demasiadas consultas seguidas. Probá de nuevo en un rato.' });
     }
 
-    const prompt = tarea === 'precio' ? PROMPT_PRECIO : PROMPT_SINTOMA;
+    const prompt = PROMPT_PRECIO;
 
     /* Armamos el contexto en texto plano para mandarlo junto a la imagen. */
     const detalles = contexto

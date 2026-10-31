@@ -303,43 +303,7 @@ NO escribas el campo "nota". Ese campo lo arma el sitio por su cuenta a
 partir de los datos que devuelves. Si lo escribís, se duplica.
 `;
 
-/* Tarea "sintoma": la IA observa la foto del tatuaje y lee la
-   descripción del cliente. Clasifica, no diagnostica. */
-const PROMPT_SINTOMA = `Sos un asistente que ayuda a un tattoo artist a orientar a sus clientes durante la curación de un tatuaje.
 
-NO sos médico y NO hacés diagnósticos. Tu función es OBSERVAR y CLASIFICAR.
-
-Recibís una imagen de un tatuaje en proceso de curación y una descripción escrita por el cliente de cómo se siente.
-
-Lo que se considera NORMAL en una curación (no lo marques como preocupante):
-- Picazón
-- Enrojecimiento leve o piel un poco moretoneada, sobre todo los primeros días u horas
-- Hinchazón: varía mucho según la zona; un rellenado en la mano se hincha muchísimo más que en el antebrazo y eso es esperable
-- Si es un rellenado pesado, es normal que expulsa un poco de tinta o un poco de sangre las primeras horas, antes de que empiece a formar la cáscara
-- Dolor fuerte los primeros dos o tres días en zonas como la mano: es insoportable pero es lo esperado. NO lo marques como preocupante mientras no venga acompañado de otros síntomas.
-
-Lo que NO es normal y hay que consultar:
-- Fiebre
-- Secreciones, pus, o secreción amarillenta/verdosa
-- Infección
-- Síntomas de gripe
-- Dolor que empeora en lugar de mejorar
-- Piel demasiado tirante (suele deberse a poca hidratación del tatuaje, no es una complicación)
-
-Cuando veas uno de estos, marcá "consultar": true y "urgente": true.
-
-Regla para el dolor: si el cliente describe un dolor fuerte, preguntate si el texto menciona fiebre, pus, secreción o empeoramiento. Si NO los menciona, el dolor por sí solo (aunque sea insoportable) NO es motivo de consulta: marcá "consultar": false.
-
-Devolvé SOLO un JSON válido, sin texto alrededor:
-
-{
-  "consultar": true | false,
-  "urgente": true | false,
-  "observaciones": ["qué se ve en la foto", "qué coincide con lo que describe el cliente"],
-  "mensaje": "una o dos frases en español, para el cliente, con tono tranquilo. Si hay que consultar, decí que escriba al tattoo artist. Si todo parece normal, decí que sigue dentro de lo esperado y que siga con los cuidados."
-}
-
-Si la imagen no es clara o no se ve un tatuaje, poné "consultar": false, "urgente": false y en observaciones que la imagen no es interpretable, y que la descripción escrita es la que se está usando.`;
 
 
 /* =========================================================
@@ -379,15 +343,7 @@ const MOCK = {
         realismo: false,
         detalle: ['ejemplo de motivo', 'relleno compacto', 'líneas finas'],
     },
-    sintoma: {
-        consultar: false,
-        urgente: false,
-        observaciones: [
-            'Ejemplo: el tatuaje no muestra señales de infección.',
-            'Ejemplo: lo que describe el cliente coincide con lo esperable.',
-        ],
-        mensaje: 'Ejemplo de mensaje del modo prueba: por lo que describís sigue dentro de lo esperado.',
-    },
+
 };
 
 /*Llama al modelo y devuelve {ok, datos} o {ok:false, error}.*/
@@ -475,7 +431,6 @@ function armarNota(analisisIA) {
 
     return partes.join(' ');
 }
-
 
 /*Calcula el RANGO estimado.
   La IA aporta atributos; el número sale siempre de acá.
@@ -609,7 +564,6 @@ function calcularRango(estilo, tam, zona, analisisIA) {
         seccion.insertBefore(aviso, seccion.firstChild);
     }
 })();
-
 
 /* =========================================================
    DASHBOARD
@@ -784,32 +738,6 @@ const INCERTIDUMBRE = {
 const ETIQUETAS_ZONA = GRUPO_ZONA;
 
 
-/* Patrones que busca el análisis orientativo.
-   `normal: true` marca lo que es esperable durante la curación.
-   `alerta: true` marca lo que hay que consultar con un profesional.
-
-   REGLA DE ORO: el análisis por palabras clave (este bloque) MANDA
-   siempre. La IA puede sumar precaución, pero nunca puede levantar
-   una alerta de acá. Si este bloque dice "alerta", se muestra la
-   alerta, diga lo que diga el modelo. */
-const PATRONES = [
-    { etiqueta: 'Picazón', normal: true, re: /picaz[óo]n|comez[óo]n|prurito/i },
-    { etiqueta: 'Ardor leve', normal: true, re: /ardor leve|quema leve|quemaz[óo]n leve/i },
-    { etiqueta: 'Enrojecimiento leve', normal: true, re: /enrojecid|rojo|hiperemia|moret[óo]n|morad/i },
-    { etiqueta: 'Sensibilidad', normal: true, re: /sensib|dolor leve/i },
-    { etiqueta: 'Descamación', normal: true, re: /descama|costra|se pela|se suelta la piel|c[áa]scara/i },
-    { etiqueta: 'Hinchazón', normal: true, re: /hincha[óo]n|hinchado|inflamaci[óo]n/i },
-    { etiqueta: 'Tinta o sangre al principio', normal: true, re: /expulsa|sangra|sangrado|borra tinta|gotea tinta/i },
-
-    { etiqueta: 'Dolor insoportable', re: /dolor (insoportable|insoportable|demasiado|desmesurado)/i },
-    { etiqueta: 'Secreción', re: /secreci[óo]n|supura|amarillento|verdoso|mal olor/i },
-    { etiqueta: 'Pus', re: /\bpus\b/i },
-    { etiqueta: 'Infección', re: /infecci[óo]n|infectad/i },
-    { etiqueta: 'Fiebre', re: /fiebre|temperatura (alta|elevada)/i },
-    { etiqueta: 'Síntomas de gripe', re: /gripe|espirros|escalofr[ií]os/i },
-    { etiqueta: 'Piel muy tirante', re: /tirante|tirantez|apretad/i },
-    { etiqueta: 'Dolor que empeora', re: /empeora|dolor (muy )?fuerte|dolor intenso/i },
-];
 
 
 /* ---------- Almacenamiento ---------- */
@@ -817,7 +745,6 @@ const GUARDAR = {
     fecha: 'eclipse:fecha-sesion',
     foto: 'eclipse:foto',
     fotoFecha: 'eclipse:foto-fecha',
-    diario: 'eclipse:diario',
     frecuencia: 'eclipse:frecuencia',
     ultimoAviso: 'eclipse:ultimo-aviso',
 };
@@ -1122,212 +1049,6 @@ function crearSubidaImagen(inputId, thumbId, thumbImgId, removeId, alCambiar) {
 }
 
 /* ---------- FIN DEL COMPONENTE ---------- */
-
-/* ---------- Diario de síntomas ---------- */
-const symptomForm = document.querySelector('#symptom-form');
-const symptomsInput = document.querySelector('#symptoms');
-const journalList = document.querySelector('#journal-list');
-
-function entradasDiario() {
-    const lista = leer(GUARDAR.diario, []);
-    return Array.isArray(lista) ? lista : [];
-}
-
-function pintarDiario() {
-    if (!journalList) return;
-    journalList.textContent = '';
-
-    entradasDiario().forEach((entrada) => {
-        const article = document.createElement('article');
-        article.className = 'journal-entry';
-
-        const time = document.createElement('time');
-        time.dateTime = entrada.fecha || '';
-        time.textContent = entrada.fecha ? fechaLarga(entrada.fecha) : '';
-
-        const texto = document.createElement('p');
-        texto.textContent = entrada.texto;
-
-        article.append(time, texto);
-
-        /*Si esa entrada tuvo análisis con IA, se muestra debajo.*/
-        if (entrada.ia) {
-            const reading = document.createElement('div');
-            reading.className = 'ai-reading' + (entrada.ia.consultar ? ' es-alerta' : '');
-
-            const h4 = document.createElement('h4');
-            h4.textContent = entrada.ia.consultar ? 'Lectura de la imagen · consultar' : 'Lectura de la imagen';
-            reading.appendChild(h4);
-
-            if (Array.isArray(entrada.ia.observaciones) && entrada.ia.observaciones.length) {
-                const ul = document.createElement('ul');
-                entrada.ia.observaciones.forEach((o) => {
-                    const li = document.createElement('li');
-                    li.textContent = o;
-                    ul.appendChild(li);
-                });
-                reading.appendChild(ul);
-            }
-
-            if (entrada.ia.mensaje) {
-                const p = document.createElement('p');
-                p.textContent = entrada.ia.mensaje;
-                reading.appendChild(p);
-            }
-
-            article.appendChild(reading);
-        }
-
-        journalList.appendChild(article);
-    });
-}
-
-/*El análisis por palabras clave. Es DETERMINÍSTICO y MANDA siempre:
-  si acá hay una alerta, se muestra, diga lo que diga la IA.*/
-function analizarPorPalabras(texto) {
-    const encontrados = PATRONES.filter((p) => p.re.test(texto));
-    return {
-        encontrados,
-        alertas: encontrados.filter((p) => !p.normal),
-        normales: encontrados.filter((p) => p.normal),
-    };
-}
-
-function pintarAnalisis() {
-    const box = document.querySelector('#analysis-result');
-    const title = document.querySelector('#analysis-title');
-    const text = document.querySelector('#analysis-text');
-    const tags = document.querySelector('#analysis-tags');
-    if (!box || !title || !text || !tags) return;
-
-    tags.textContent = '';
-
-    const entradas = entradasDiario();
-    if (entradas.length === 0) {
-        box.classList.remove('is-alert');
-        title.textContent = 'Sin análisis disponible';
-        text.textContent = 'Registrá tus síntomas para obtener una orientación inicial sobre lo que estás experimentando.';
-        return;
-    }
-
-    const textoTodo = entradas.map((e) => e.texto).join(' \n ');
-    const { encontrados, alertas, normales } = analizarPorPalabras(textoTodo);
-
-    encontrados.forEach((p) => {
-        const chip = document.createElement('span');
-        chip.className = p.normal ? 'analysis-tag' : 'analysis-tag alert';
-        chip.textContent = p.etiqueta;
-        tags.appendChild(chip);
-    });
-
-    /*La IA de la entrada más reciente. Solo puede SUMAR una alerta,
-      nunca levantar una del análisis por palabras.
-      Las entradas van de más nueva a más vieja, así que la primera
-      que tenga IA es la última analizada.*/
-    const ultimaConIA = entradas.find((e) => e.ia);
-    const iaPideConsultar = !!(ultimaConIA && ultimaConIA.ia && ultimaConIA.ia.consultar);
-
-    if (alertas.length > 0) {
-        box.classList.add('is-alert');
-        title.textContent = 'Revisá estos síntomas';
-        text.textContent =
-            `Se detectaron ${alertas.length} ${alertas.length === 1 ? 'señal' : 'señales'} que conviene consultar con un profesional de la salud ` +
-            `y con el tatuador: ${alertas.map((a) => a.etiqueta.toLowerCase()).join(', ')}.`;
-        return;
-    }
-
-    /*La IA pidió consultar aunque las palabras no lo indicaban:
-      se suma la alerta, con el texto del modelo.*/
-    if (iaPideConsultar) {
-        box.classList.add('is-alert');
-        title.textContent = 'Revisá estos síntomas';
-        text.textContent =
-            'La lectura de la imagen sugiere que conviene consultar. Escribime y lo vemos, ' +
-            'y si hay señales de fiebre, infección o pus, buscá a un profesional de la salud.';
-        return;
-    }
-
-    box.classList.remove('is-alert');
-    if (normales.length > 0) {
-        title.textContent = 'Dentro de lo habitual';
-        text.textContent =
-            `Se detectaron ${normales.length} ${normales.length === 1 ? 'señal habitual' : 'señales habituales'} ` +
-            'durante la curación. Podés seguir con los cuidados de esta página.';
-    } else {
-        title.textContent = 'Sin patrones conocidos';
-        text.textContent =
-            'No se reconoció ninguno de los patrones habituales. Si algo te preocupa, describilo con más detalle o escribime por WhatsApp.';
-    }
-}
-
-if (symptomForm && symptomsInput) {
-    const boton = symptomForm.querySelector('button[type="submit"]');
-
-    const subidaSintoma = crearSubidaImagen('symptom-image', 'symptom-thumb', 'symptom-thumb-img', 'symptom-image-remove');
-
-    symptomForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const texto = symptomsInput.value.trim();
-        if (!texto) return;
-
-        const imagen = subidaSintoma ? subidaSintoma.obtener() : null;
-
-        /*El registro se guarda SIEMPRE, aunque la IA falle: la
-          información del cliente no se pierde porque el análisis
-          no haya podido hacerse.*/
-        const entrada = {
-            fecha: hoyISO(),
-            texto: texto.slice(0, 500),
-        };
-
-        let aviso = null;
-
-        if (imagen) {
-            boton.disabled = true;
-            boton.textContent = 'Analizando…';
-
-            const diasDeCura = diasDesde(leer(GUARDAR.fecha));
-            const res = await analizarConIA('sintoma', imagen, {
-                descripcion: texto,
-                dias: diasDeCura !== null ? diasDeCura + 1 : null,
-            });
-
-            boton.disabled = false;
-            boton.textContent = 'Registrar síntomas';
-
-            if (res.ok) {
-                entrada.ia = res.datos;
-            } else {
-                aviso = res.error;
-            }
-        }
-
-        const lista = entradasDiario();
-        lista.unshift(entrada);
-
-        if (!escribir(GUARDAR.diario, lista.slice(0, 30))) {
-            alert('No se pudo guardar el registro. El almacenamiento del navegador puede estar lleno.');
-            return;
-        }
-
-        symptomsInput.value = '';
-        if (subidaSintoma) subidaSintoma.limpiar();
-
-        pintarDiario();
-        pintarAnalisis();
-
-        if (aviso) {
-            const p = document.createElement('p');
-            p.className = 'ai-disclaimer';
-            p.textContent = aviso;
-            document.querySelector('#symptom-analysis')?.appendChild(p);
-        }
-    });
-
-    pintarDiario();
-    pintarAnalisis();
-}
-
 
 /* ---------- Recordatorios ---------- */
 const notifForm = document.querySelector('#notification-form');
