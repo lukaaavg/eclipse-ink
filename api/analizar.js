@@ -315,6 +315,10 @@ const PALABRAS_FUERA = [
     'ornamentosigos', 'black', 'style', 'lines', 'tattoo', 'design',
 ];
 
+/*Grupos de consonantes que no existen en español: delatan las
+  palabras rotas que deja el modelo ("Aveustría" por "Ave mitológica").*/
+const CLUSTERS_INVALIDAS = /\w(str|scl|stl|scr)\w/i;
+
 /*Quita caracteres de otros alfabetos que se le escapan al modelo en los
   textos libres (el chino aparece pegado al español). Los campos
   estructurados nunca se tocan.*/
@@ -335,6 +339,15 @@ function limpiarTexto(valor) {
         .trim();
 }
 
+/*Si el texto tiene una palabra rota, se descarta entero: es mejor
+  quedarnos sin detalle que mostrarle al cliente "Aveustría".*/
+function textoRoto(valor) {
+    if (typeof valor !== 'string' || !valor.trim()) return true;
+    if (CLUSTERS_INVALIDAS.test(valor)) return true;
+    if (/[^\x20-\x7E¡¿áéíóúüñÁÉÍÓÚÜÑ°·—–"'(),.:;]/.test(valor)) return true;
+    return false;
+}
+
 function limpiarObjeto(datos) {
     if (!datos || typeof datos !== 'object') return datos;
 
@@ -350,6 +363,13 @@ function limpiarObjeto(datos) {
         Object.keys(datos.detalle).forEach((k) => {
             datos.detalle[k] = limpiarTexto(datos.detalle[k]);
         });
+    }
+
+    /*El detalle es el unico texto libre que queda (la nota la arma el
+      sitio). Si viene roto, se vacia y el sitio usa su propia version.*/
+    if (typeof datos.detalle === 'string') {
+        datos.detalle = limpiarTexto(datos.detalle);
+        if (textoRoto(datos.detalle)) datos.detalle = '';
     }
 
     return datos;

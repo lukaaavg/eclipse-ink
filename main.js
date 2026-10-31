@@ -425,11 +425,17 @@ const PALABRAS_FUERA = [
     'transitions', 'boutons', 'delineate', 'ornamentosigos', 'luneceantas',
 ];
 
-/*Un texto se considera sano si no tiene caracteres de otros alfabetos
-  ni palabras en otro idioma.*/
+/*Grupos de consonantes que no existen en español. Sirven para
+  detectar las palabras rotas que deja el modelo: "Aveustría" en vez de
+  "Ave mitológica", por ejemplo.*/
+const CLUSTERS_INVALIDAS = /\w(str|scl|stl|scr)\w/i;
+
+/*Un texto se considera sano si no tiene caracteres de otros alfabetos,
+  ni palabras en otro idioma, ni grupos de consonantes imposibles.*/
 function textoSano(texto) {
     if (!texto || texto.length < 8) return false;
     if (/[^\x20-\x7E¡¿áéíóúüñÁÉÍÓÚÜÑ°·—–"'(),.:;]/.test(texto)) return false;
+    if (CLUSTERS_INVALIDAS.test(texto)) return false;
     const enMinuscula = texto.toLowerCase();
     return !PALABRAS_FUERA.some((p) => enMinuscula.includes(p));
 }
