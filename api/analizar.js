@@ -143,7 +143,7 @@ Devolvé SOLO un JSON válido, sin texto alrededor, con esta forma exacta:
   "grosor": true | false,
   "greywash": true | false,
   "realismo": true | false,
-  "detalle": "una frase de máximo 25 palabras que describa qué tiene el diseño"
+  "detalle": ["ave con espada", "alas extendidas", "rellenos en las plumas"]
 }
 
 Sobre "colores": es la lista de colores de TINTA del diseño. Si el diseño es
@@ -159,9 +159,11 @@ Sobre "nivel":
 Sobre "greywash": poné true solo si el sombreado es un degradado suave
 tipo volumen. El sombreado plano o de un solo tono NO es greywash.
 
-Sobre "detalle": describí el diseño en una sola frase. Decí qué hay:
-el motivo, los rellenos, las líneas. No opines sobre el trabajo, no
-opines sobre el precio y no hables de sesiones ni de la piel.
+Sobre "detalle": es una lista de 2 a 4 frases MUY cortas (de 2 a 4 palabras
+cada una) que digan qué hay en el diseño: el motivo, los elementos, los
+rellenos, las líneas. Escribí cada frase sola, sin comas ni punto final.
+No opines sobre el trabajo, no opines sobre el precio y no hables de
+sesiones ni de la piel.
 
 === IMPORTANTE ===
 NO escribas el campo "nota". Ese campo lo arma el sitio por su cuenta a
@@ -365,11 +367,16 @@ function limpiarObjeto(datos) {
         });
     }
 
-    /*El detalle es el unico texto libre que queda (la nota la arma el
-      sitio). Si viene roto, se vacia y el sitio usa su propia version.*/
-    if (typeof datos.detalle === 'string') {
-        datos.detalle = limpiarTexto(datos.detalle);
-        if (textoRoto(datos.detalle)) datos.detalle = '';
+    /*El detalle es una lista de frases cortas. Cada una se valida por
+      separado: si una sale rota, se descarta esa y se conservan las
+      demás. Es degradación parcial, no todo o nada.*/
+    if (Array.isArray(datos.detalle)) {
+        datos.detalle = datos.detalle
+            .map((d) => (typeof d === 'string' ? limpiarTexto(d) : ''))
+            .filter((d) => d && d.length > 3 && d.length < 60 && !textoRoto(d))
+            .slice(0, 5);
+    } else {
+        datos.detalle = [];
     }
 
     return datos;

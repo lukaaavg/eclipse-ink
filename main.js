@@ -276,7 +276,7 @@ Devolvé SOLO un JSON válido, sin texto alrededor, con esta forma exacta:
   "grosor": true | false,
   "greywash": true | false,
   "realismo": true | false,
-  "detalle": "una frase de máximo 25 palabras que describa qué tiene el diseño"
+  "detalle": ["ave con espada", "alas extendidas", "rellenos en las plumas"]
 }
 
 Sobre "colores": es la lista de colores de TINTA del diseño. Si el diseño es
@@ -292,9 +292,11 @@ Sobre "nivel":
 Sobre "greywash": poné true solo si el sombreado es un degradado suave
 tipo volumen. El sombreado plano o de un solo tono NO es greywash.
 
-Sobre "detalle": describí el diseño en una sola frase. Decí qué hay:
-el motivo, los rellenos, las líneas. No opines sobre el trabajo, no
-opines sobre el precio y no hables de sesiones ni de la piel.
+Sobre "detalle": es una lista de 2 a 4 frases MUY cortas (de 2 a 4 palabras
+cada una) que digan qué hay en el diseño: el motivo, los elementos, los
+rellenos, las líneas. Escribí cada frase sola, sin comas ni punto final.
+No opines sobre el trabajo, no opines sobre el precio y no hables de
+sesiones ni de la piel.
 
 === IMPORTANTE ===
 NO escribas el campo "nota". Ese campo lo arma el sitio por su cuenta a
@@ -367,6 +369,7 @@ const MOCK = {
     precio: {
         colores: ['negro'],
         estilo_detectado: 'fineline',
+        se_ve_piel: false,
         zona_detectada: null,
         tamano_relativo: null,
         nivel: 'medio',
@@ -374,12 +377,7 @@ const MOCK = {
         grosor: false,
         greywash: false,
         realismo: false,
-        detalle: {
-            rellenado: 'Ejemplo: hay un relleno compacto.',
-            sombreado: 'Ejemplo: sombreado simple, sin degradado.',
-            lineas: 'Ejemplo: líneas finas de grosor parejo.',
-        },
-        nota: 'Este es un resultado de ejemplo del modo prueba. Con la IA real, esto se arma mirando tu imagen.',
+        detalle: ['ejemplo de motivo', 'relleno compacto', 'líneas finas'],
     },
     sintoma: {
         consultar: false,
@@ -1531,13 +1529,28 @@ if (budgetForm && styleSelect && zoneSelect && budgetResult) {
         }
 
         /*Lo que vio el modelo, para que el cliente entienda de dónde
-          sale el rango. Si el texto viene roto, se muestra la nota
-          armada con los datos estructurados, que nunca falla.*/
+          sale el rango. Cada frase se valida por separado: si una sale
+          rota se descarta, y si no queda ninguna se usa la nota que
+          arma el sitio, que nunca falla.*/
         const det = document.querySelector('#detection-detail');
         if (det) {
-            const texto = typeof analisisIA.detalle === 'string' ? analisisIA.detalle.trim() : '';
-            det.textContent = textoSano(texto) ? texto : armarNota(analisisIA);
-            det.hidden = false;
+            const lista = Array.isArray(analisisIA.detalle) ? analisisIA.detalle : [];
+            const limpias = lista.filter((d) => typeof d === 'string' && textoSano(d) && d.length > 3);
+
+            if (limpias.length) {
+                det.textContent = '';
+                const ul = document.createElement('ul');
+                limpias.forEach((frase) => {
+                    const li = document.createElement('li');
+                    li.textContent = frase.charAt(0).toUpperCase() + frase.slice(1);
+                    ul.appendChild(li);
+                });
+                det.appendChild(ul);
+                det.hidden = false;
+            } else {
+                det.textContent = armarNota(analisisIA);
+                det.hidden = false;
+            }
         }
 
         /*Los selects quedan pre-cargados con lo que detectó la IA.

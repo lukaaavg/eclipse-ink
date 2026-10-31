@@ -2218,6 +2218,24 @@ footer{
     font-size: 0.85rem;
     line-height: 1.7;
 }
+.detection-detail ul{
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.6rem;
+}
+.detection-detail li{
+    padding: 4px 11px;
+
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid #262626;
+    border-radius: 50px;
+
+    color: #A3DBE1;
+    font-size: 0.75rem;
+    letter-spacing: 0.2px;
+}
 .detection-overrides label{
     margin-bottom: 0.4rem;
     font-size: 0.72rem;
