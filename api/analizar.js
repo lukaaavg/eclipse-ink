@@ -28,12 +28,42 @@ const MODELO = process.env.MINIMAX_MODELO || 'MiniMax-M3.1-Flash';
 const BASE_URL = process.env.MINIMAX_BASE_URL || 'https://api.minimax.io/anthropic';
 
 /* El prompt vive en api/prompt.txt: es la fuente única y la comparten
-   esta versión en Node y la de PHP (api/analizar.php). Si cambiás las
-   reglas del tattoo artist, cambiás ese archivo y nada más. */
-const PROMPT_PRECIO = readFileSync(
-  path.join(path.dirname(fileURLToPath(import.meta.url)), 'prompt.txt'),
-  'utf8'
-).trim();
+   esta versión en Node y la de PHP (api/analizar-php.php). Si cambiás las
+   reglas del tattoo artist, cambiás ese archivo y nada más.
+
+   En Vercel la función se empaqueta, así que el .txt tiene que estar
+   incluido en vercel.json (includeFiles) y puede caer en carpetas
+   distintas según dónde se arme el paquete. Por eso se prueban varias. */
+function leerPrompt() {
+    const carpeta = path.dirname(fileURLToPath(import.meta.url));
+
+    const candidatos = [
+        path.join(carpeta, 'prompt.txt'),
+        path.join(carpeta, 'api', 'prompt.txt'),
+        path.join(process.cwd(), 'api', 'prompt.txt'),
+        path.join(process.cwd(), 'prompt.txt'),
+    ];
+
+    for (const ruta of candidatos) {
+        try {
+            const texto = readFileSync(ruta, 'utf8').trim();
+            if (texto) return texto;
+        } catch (e) {
+            /* sigue con la otra */
+        }
+    }
+
+    throw new Error('No se encontró api/prompt.txt');
+}
+
+let promptEnCache = null;
+
+function prompt() {
+    if (promptEnCache === null) {
+        promptEnCache = leerPrompt();
+    }
+    return promptEnCache;
+}
 
 /* ---------- Límites de uso ----------
    Esta función es pública y la clave tiene costo. Sin límites, cualquiera
@@ -288,6 +318,15 @@ export default async function handler(req, res) {
               .join('\n')
         : '';
 
+    /* El prompt se lee acá, antes de armar el pedido. */
+    let promptTexto;
+    try {
+        promptTexto = prompt();
+    } catch (e) {
+        console.error('No se pudo leer el prompt:', e);
+        return res.status(500).json({ ok: false, error: 'El análisis no está configurado en el servidor' });
+    }
+
     const contenido = [
         {
             type: 'image',
@@ -295,7 +334,7 @@ export default async function handler(req, res) {
         },
         {
             type: 'text',
-            text: detalles ? `${prompt}\n\nContexto del cliente:\n${detalles}` : prompt,
+            text: detalles ? `${promptTexto}\n\nContexto del cliente:\n${detalles}` : promptTexto,
         },
     ];
 
@@ -327,7 +366,6 @@ export default async function handler(req, res) {
                 messages: [{ role: 'user', content: contenido }],
             }),
         });
-
         if (!llamada.ok) {
             const detalle = await llamada.text();
             console.error('MiniMax error', llamada.status, detalle);
