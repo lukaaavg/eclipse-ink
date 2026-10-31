@@ -21,6 +21,11 @@ npm-debug.log*
 .env.local
 .env.*.local
 
+# El .env con la clave NUNCA se sube al repositorio.
+# El archivo de ejemplo si se sube, para que se vea cómo se hace.
+ejemplo-.env.txt
+!ejemplo-.env.txt
+
 # Sistema
 .DS_Store
 Thumbs.db

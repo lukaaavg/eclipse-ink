@@ -1,18 +1,25 @@
 /**
- * /api/analizar — función serverless para Eclipse Ink
+ * /api/analizar — función serverless para Eclipse Ink (Node, para Vercel)
  *
  * Recibe {tarea, imagen, contexto} y devuelve {ok, datos} con el
  * análisis del modelo. La clave de la API vive SOLO acá, en la
  * variable de entorno del hosting. Nunca viaja al navegador.
  *
- * Compatible con Vercel (carpeta /api) y Netlify (carpeta /netlify/functions).
+ * Para el hosting con PHP está api/analizar.php, que hace lo mismo.
+ * Las dos leen el prompt de api/prompt.txt, así que no se desincronizan.
  *
  * VARIABLES DE ENTORNO:
  *   MINIMAX_API_KEY   -> tu clave de platform.minimax.io/console/plan
+ *   MINIMAX_MODELO    -> opcional, por defecto MiniMax-M3.1-Flash
+ *   MINIMAX_BASE_URL  -> opcional, por defecto https://api.minimax.io/anthropic
  *
  * Deploy en Vercel:  poné la variable en Settings > Environment Variables
  * y asociala a Production y Preview.
  */
+
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 /*Configuración por variable de entorno.
   Si no están definidas, se usan estos valores por defecto, así la
@@ -20,157 +27,13 @@
 const MODELO = process.env.MINIMAX_MODELO || 'MiniMax-M3.1-Flash';
 const BASE_URL = process.env.MINIMAX_BASE_URL || 'https://api.minimax.io/anthropic';
 
-/* Los prompts viven acá en el servidor. El navegador nunca los ve.
-   Se mantienen sincronizados con el de main.js (PROMPT_PRECIO).
-   Si cambiás las reglas, cambiás los dos lados. */
-const PROMPT_PRECIO = `Sos un asistente que analiza diseños de tatuaje para un tattoo artist argentino.
-
-Tu trabajo NO es dar un precio. Es DESCRIBIR con precisión el diseño, porque de esa descripción depende el precio.
-
-=== IMPORTANTE: ENUMERÁ, NO JUGUES ===
-Cuando te pidan algo que se pueda contar, contá. No digas "sí" o "no" a algo que se puede listar.
-Si te preguntan qué colores hay, listalos. Si te preguntan qué zona del cuerpo es, nombrala.
-Enumerar es mucho más confiable que juzgar, y no podés "olvidarte" de algo que estás listando.
-
-=== CATEGORÍAS ===
-Cada rasgo va en una sola categoría. No se mezclan.
-
-"lineas"
-  Trazos finos, con o sin cambios de grosor. Ej: filete, tribal de líneas,
-  contornos, el trazo de una caligrafía.
-
-"rellenado"
-  Áreas de tinta SÓLIDA y compacta: negro macizo o color plano dentro de
-  una forma, SIN degradado. Ej: las plumas negras de un ave, el cuerpo de
-  un personaje, un tribal con las partes negras tapadas.
-
-"sombreado"
-  SOLO si hay DEGRADADO: tonos que van del claro al oscuro dentro de una
-  misma forma, o difuminado tipo greywash. Ej: el volumen de una flor
-  hecho con grises.
-
-"color"
-  Más de un color de TINTA en el diseño.
-
-"multiaguja"
-  Algún relleno necesita más de una aguja o más de una pasada para quedar
-  sólido. Es el relleno grande y tapado, no cualquier línea gruesa.
-
-"grande"
-  El diseño ocupa un área grande tipo manga o media manga.
-
-"realismo"
-  El diseño es realista: rostros, animales, retratos. Se marca SIEMPRE
-  cuando el pedido ES realismo, aunque se pueda simplificar.
-
-=== PRUEBAS NEGATIVAS ===
-Estas son las confusiones más comunes. Seguí las al pie de la letra.
-
-1. Un trazo GRUESO de tinta sólida (el trazo gordo de una caligrafía, una
-   letra pesada, un borde de 3mm) NO es "sombreado". Es "rellenado" y
-   además "variación de grosor de línea". Jamás lo marques como sombreado.
-
-2. Si la forma es de un SOLO tono uniforme (todo negro, todo rojo), NO es
-   "sombreado". Es "rellenado". Si no hay gris ni degradado visible en la
-   imagen, no hay sombreado.
-
-3. "multiaguja" NO es "rellenado". Un relleno chico o mediano entra en una
-   pasada. Solo cuenta como multiaguja si la superficie es grande y densa
-   y claramente va a necesitar varias agujas o varias pasadas.
-
-4. La tinta ROJA o de color con los bordes suaves NO es "sombreado": es
-   "color". Si hay tinta de más de un color, el "color" va en la lista
-   aunque el otro tono sea un degradado.
-
-5. Los colores de la PIEL, del fondo y de la ropa NO son colores de tinta.
-   Solo contá los que forman parte del diseño.
-
-=== IDIOMA Y ALCANCE ===
-Este texto es para un sitio web argentino. Escribí todo en español rioplatense.
-Nunca uses palabras en inglés ni de ningún otro idioma. Si no sabés cómo
-decir algo en español, decilo de forma simple.
-No te inventes datos que no veas en la imagen: si no está claro, va null.
-
-=== REGLAS DE IDIOMA ===
-Todos los textos que escribas van en español rioplatense. No uses ninguna
-palabra en inglés, ni aunque sea una sola. Si una palabra te sale en
-inglés, cambiala por la equivalente en español antes de escribirla.
-
-=== LA PIEZA QUE FALTA ===
-Antes que nada, fijate si la imagen muestra PIEL alrededor del tattoo.
-Esto decide si podés decir algo sobre la zona del cuerpo y el tamaño.
-
-"se_ve_piel": true
-  La imagen muestra piel con el tattoo ya hecho en una parte del cuerpo.
-  Solo en este caso completá "zona_detectada" y "tamano_relativo".
-"se_ve_piel": false
-  Es una imagen de un diseño suelto, un dibujo, o una foto donde no se
-  distingue la piel. En este caso "zona_detectada" y "tamano_relativo"
-  van SIEMPRE en null. Sin excepciones. Es preferible dejar null que
-  inventar un valor.
-
-=== TAMAÑO: NO LO ADIVINES ===
-El tamaño de un tattoo no se puede deducir de una foto: depende de la
-distancia y del encuadre. Si "se_ve_piel" es false, "tamano_relativo" va
-null. Si es true, compáralo SOLO con la parte del cuerpo donde está
-(una muñeca, un antebrazo) y nunca con la foto entera.
-
-=== ZONA DEL CUERPO ===
-Usá SOLO uno de estos valores exactos, o null si no se ve piel:
-"antebrazo", "pantorrilla", "brazo", "pierna", "muslo", "hombro",
-"costado", "espalda", "torso", "dedos", "mano", "muñeca", "cuello", "pecho"
-
-Ojo: la espalda es "espalda" o "torso", nunca "antebrazo".
-
-=== ESTILO ===
-"fineline": predomina el trazo fino. Aunque tenga unos rellenos chicos.
-"rellenado": predomina la tinta sólida.
-"mixto": hay cantidades COMPARABLES de trazo fino y de tinta sólida,
-  o hay rellenos grandes. Si los rellenos son chicos y el diseño es
-  casi todo línea, es "fineline", no "mixto".
-
-=== SALIDA ===
-Devolvé SOLO un JSON válido, sin texto alrededor, con esta forma exacta:
-
-{
-  "se_ve_piel": true | false,
-  "colores": ["negro", "rojo"],
-  "estilo_detectado": "fineline" | "rellenado" | "mixto" | null,
-  "zona_detectada": "antebrazo" | null,
-  "tamano_relativo": "moneda" | "billetera" | "palma" | "dos palmas" | null,
-  "nivel": "simple" | "medio" | "alto",
-  "factores": ["lineas", "rellenado", "sombreado", "color", "multiaguja", "grande"],
-  "grosor": true | false,
-  "greywash": true | false,
-  "realismo": true | false,
-  "detalle": ["ave con espada", "alas extendidas", "rellenos en las plumas"]
-}
-
-Sobre "colores": es la lista de colores de TINTA del diseño. Si el diseño es
-monocromo, es una lista con un solo color. Los colores de la PIEL, del
-fondo y de la ropa NO son colores de tinta.
-
-Sobre "nivel":
-- "simple": solo líneas finas, sin relleno, sin color, sin sombreado.
-- "medio": hay relleno o sombreado simple, o dos colores.
-- "alto": hay relleno pesado o denso, greywash, mezcla de estilos, o
-  muchos elementos separados.
-
-Sobre "greywash": poné true solo si el sombreado es un degradado suave
-tipo volumen. El sombreado plano o de un solo tono NO es greywash.
-
-Sobre "detalle": es una lista de 2 a 4 frases MUY cortas (de 2 a 4 palabras
-cada una) que digan qué hay en el diseño: el motivo, los elementos, los
-rellenos, las líneas. Escribí cada frase sola, sin comas ni punto final.
-No opines sobre el trabajo, no opines sobre el precio y no hables de
-sesiones ni de la piel.
-
-=== IMPORTANTE ===
-NO escribas el campo "nota". Ese campo lo arma el sitio por su cuenta a
-partir de los datos que devuelves. Si lo escribís, se duplica.
-`;
-
-
+/* El prompt vive en api/prompt.txt: es la fuente única y la comparten
+   esta versión en Node y la de PHP (api/analizar.php). Si cambiás las
+   reglas del tattoo artist, cambiás ese archivo y nada más. */
+const PROMPT_PRECIO = readFileSync(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), 'prompt.txt'),
+  'utf8'
+).trim();
 
 /* ---------- Límites de uso ----------
    Esta función es pública y la clave tiene costo. Sin límites, cualquiera
@@ -211,41 +74,6 @@ if (typeof setInterval !== 'undefined') {
     if (typeof limpiar.unref === 'function') limpiar.unref();
 }
 
-/*Revisa que la respuesta tenga la forma esperada. Si el modelo devuelve
-  algo raro, se completa con valores seguros en vez de romper la web.*/
-function validarDatos(datos) {
-    if (!datos || typeof datos !== 'object') return null;
-
-    const estiloOk = ['fineline', 'rellenado', 'mixto', null];
-    const nivelOk = ['simple', 'medio', 'alto'];
-    const zonaOk = [
-        'antebrazo', 'pantorrilla', 'brazo', 'pierna', 'muslo', 'hombro',
-        'costado', 'espalda', 'torso', 'dedos', 'mano', 'muñeca', 'cuello', 'pecho',
-    ];
-    const tamOk = ['moneda', 'billetera', 'palma', 'dos palmas', null];
-    const factoresOk = ['lineas', 'rellenado', 'sombreado', 'color', 'multiaguja', 'grande'];
-
-    if (!estiloOk.includes(datos.estilo_detectado)) datos.estilo_detectado = null;
-    if (!nivelOk.includes(datos.nivel)) datos.nivel = 'medio';
-    if (!zonaOk.includes(datos.zona_detectada)) datos.zona_detectada = null;
-    if (!tamOk.includes(datos.tamano_relativo)) datos.tamano_relativo = null;
-
-    if (!Array.isArray(datos.colores)) datos.colores = [];
-    if (!Array.isArray(datos.factores)) datos.factores = [];
-    datos.factores = datos.factores.filter((f) => factoresOk.includes(f));
-
-    if (typeof datos.grosor !== 'boolean') datos.grosor = false;
-    if (typeof datos.greywash !== 'boolean') datos.greywash = false;
-    if (typeof datos.realismo !== 'boolean') datos.realismo = false;
-    if (typeof datos.se_ve_piel !== 'boolean') datos.se_ve_piel = false;
-
-    /*Sin estilo no hay forma de calcular: es preferible fallar antes
-      que inventar un precio con una base que no corresponde.*/
-    if (!datos.estilo_detectado) datos.estilo_detectado = 'fineline';
-
-    return datos;
-}
-
 /* ---------- utilidades ---------- */
 
 /*El modelo a veces mete un salto de línea REAL dentro de un string
@@ -279,8 +107,7 @@ function repararJSON(texto) {
   desvió de idioma.*/
 const PALABRAS_FUERA = [
     'requires', 'aggregates', 'distributed', 'emphasized', 'transitions',
-    'boutons', 'resume', 'delineate', 'delicateas', 'luneceantas',
-    'ornamentosigos', 'black', 'style', 'lines', 'tattoo', 'design',
+    'boutons', 'resume', 'delineate', 'ornamentosigos', 'luneceantas',
 ];
 
 /*Grupos de consonantes que no existen en español: delatan las
@@ -314,38 +141,6 @@ function textoRoto(valor) {
     if (CLUSTERS_INVALIDAS.test(valor)) return true;
     if (/[^\x20-\x7E¡¿áéíóúüñÁÉÍÓÚÜÑ°·—–"'(),.:;]/.test(valor)) return true;
     return false;
-}
-
-function limpiarObjeto(datos) {
-    if (!datos || typeof datos !== 'object') return datos;
-
-    ['nota', 'mensaje'].forEach((k) => {
-        if (typeof datos[k] === 'string') datos[k] = limpiarTexto(datos[k]);
-    });
-
-    ['colores', 'observaciones'].forEach((k) => {
-        if (Array.isArray(datos[k])) datos[k] = datos[k].map(limpiarTexto);
-    });
-
-    if (datos.detalle && typeof datos.detalle === 'object') {
-        Object.keys(datos.detalle).forEach((k) => {
-            datos.detalle[k] = limpiarTexto(datos.detalle[k]);
-        });
-    }
-
-    /*El detalle es una lista de frases cortas. Cada una se valida por
-      separado: si una sale rota, se descarta esa y se conservan las
-      demás. Es degradación parcial, no todo o nada.*/
-    if (Array.isArray(datos.detalle)) {
-        datos.detalle = datos.detalle
-            .map((d) => (typeof d === 'string' ? limpiarTexto(d) : ''))
-            .filter((d) => d && d.length > 3 && d.length < 60 && !textoRoto(d))
-            .slice(0, 5);
-    } else {
-        datos.detalle = [];
-    }
-
-    return datos;
 }
 
 /* Saca el ```json ... ``` si el modelo lo envuelve, y extrae el objeto. */
@@ -399,15 +194,51 @@ function extraerJSON(texto) {
     return null;
 }
 
-function respuestaJSON(codigo, cuerpo) {
-    return {
-        statusCode: codigo,
-        headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            'Cache-Control': 'no-store',
-        },
-        body: JSON.stringify(cuerpo),
-    };
+/*Revisa que la respuesta tenga la forma esperada. Si el modelo devuelve
+  algo raro, se completa con valores seguros en vez de romper la web.*/
+function validarDatos(datos) {
+    if (!datos || typeof datos !== 'object') return null;
+
+    const estiloOk = ['fineline', 'rellenado', 'mixto', null];
+    const nivelOk = ['simple', 'medio', 'alto'];
+    const zonaOk = [
+        'antebrazo', 'pantorrilla', 'brazo', 'pierna', 'muslo', 'hombro',
+        'costado', 'espalda', 'torso', 'dedos', 'mano', 'muñeca', 'cuello', 'pecho',
+    ];
+    const tamOk = ['moneda', 'billetera', 'palma', 'dos palmas', null];
+    const factoresOk = ['lineas', 'rellenado', 'sombreado', 'color', 'multiaguja', 'grande'];
+
+    if (!estiloOk.includes(datos.estilo_detectado)) datos.estilo_detectado = null;
+    if (!nivelOk.includes(datos.nivel)) datos.nivel = 'medio';
+    if (!zonaOk.includes(datos.zona_detectada)) datos.zona_detectada = null;
+    if (!tamOk.includes(datos.tamano_relativo)) datos.tamano_relativo = null;
+
+    if (!Array.isArray(datos.colores)) datos.colores = [];
+    if (!Array.isArray(datos.factores)) datos.factores = [];
+    datos.factores = datos.factores.filter((f) => factoresOk.includes(f));
+
+    if (typeof datos.grosor !== 'boolean') datos.grosor = false;
+    if (typeof datos.greywash !== 'boolean') datos.greywash = false;
+    if (typeof datos.realismo !== 'boolean') datos.realismo = false;
+    if (typeof datos.se_ve_piel !== 'boolean') datos.se_ve_piel = false;
+
+    /*Sin estilo no hay forma de calcular: es preferible fallar antes
+      que inventar un precio con una base que no corresponde.*/
+    if (!datos.estilo_detectado) datos.estilo_detectado = 'fineline';
+
+    /*El detalle es una lista de frases cortas. Cada una se valida por
+      separado: si una sale rota, se descarta esa y se conservan las
+      demás. Es degradación parcial, no todo o nada.*/
+    if (Array.isArray(datos.detalle)) {
+        datos.detalle = datos.detalle
+            .map((d) => (typeof d === 'string' ? limpiarTexto(d) : ''))
+            .filter((d) => d && d.length > 3 && d.length < 60 && !textoRoto(d))
+            .slice(0, 5);
+    } else {
+        datos.detalle = [];
+    }
+
+    return datos;
 }
 
 /* ---------- handler ---------- */
@@ -449,8 +280,6 @@ export default async function handler(req, res) {
         return res.status(429).json({ ok: false, error: 'Demasiadas consultas seguidas. Probá de nuevo en un rato.' });
     }
 
-    const prompt = PROMPT_PRECIO;
-
     /* Armamos el contexto en texto plano para mandarlo junto a la imagen. */
     const detalles = contexto
         ? Object.entries(contexto)
@@ -486,8 +315,6 @@ export default async function handler(req, res) {
                    hasta fragmentos rotos ("SeIPLICAR") en los textos
                    libres. Es un problema de muestreo, no de prompt. */
                 temperature: 0,
-                /* effort bajo: para clasificar un tatuaje no hace falta
-                   razonar en profundidad, y baja la latencia y el costo. */
                 output_config: { effort: 'low' },
                 /* El system prompt ancla el idioma de toda la respuesta.
                    Sin esto, los textos libres se le escapan al español. */
@@ -525,4 +352,20 @@ export default async function handler(req, res) {
         console.error('Error en /api/analizar:', err);
         return res.status(500).json({ ok: false, error: 'El análisis no se pudo completar' });
     }
+}
+
+/*Limpia los textos libres: quita caracteres de otros alfabetos y
+  palabras en otro idioma. Los campos estructurados no se tocan.*/
+function limpiarObjeto(datos) {
+    if (!datos || typeof datos !== 'object') return datos;
+
+    ['nota', 'mensaje'].forEach((k) => {
+        if (typeof datos[k] === 'string') datos[k] = limpiarTexto(datos[k]);
+    });
+
+    ['colores', 'observaciones'].forEach((k) => {
+        if (Array.isArray(datos[k])) datos[k] = datos[k].map(limpiarTexto);
+    });
+
+    return datos;
 }

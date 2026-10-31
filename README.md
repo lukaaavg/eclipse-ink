@@ -60,6 +60,47 @@ fuerza la simulación, para trabajar en la interfaz sin gastar.
 
 ## Publicar
 
+Hay dos destinos posibles. La calculadora necesita un backend (el
+análisis con IA), así que en los dos casos hace falta una función
+serverless.
+
+### En el server con PHP (FileZilla)
+
+1. Subí **todo** el contenido de la carpeta al `public_html` (o a la
+   carpeta donde está el sitio).
+2. Creá un archivo `.env` en la raíz del sitio con tu clave:
+
+   ```
+   MINIMAX_API_KEY=sk-cp-...
+   ```
+
+   Se puede bajar de `ejemplo-.env.txt`. **No le pongas `.txt` al
+   final.** El archivo tiene que llamarse `.env` exactamente.
+3. Verificá que en `public_html` queden estas carpetas y archivos:
+
+   ```
+   api/analizar.php      ← el endpoint
+   api/config.php        ← lee la clave
+   api/prompt.txt        ← las reglas del análisis
+   index.html, contacto.html, portfolio.html, dashboard.html
+   style.css, main.js
+   favicon-*.png, apple-touch-icon.png, og-image.jpg
+   logo-blanco.png, logo-simplificado.png
+   estudio/, tatuajes/
+   ```
+
+4. **No hace falta** subir `api/analizar.js`, `vercel.json`,
+   `package.json`, `servidor-local.js` ni `.vercel/`. Son para Node y
+   para Vercel, no para el server con PHP. Subirlos no rompe nada, pero
+   tampoco sirven.
+
+5. Probá la calculadora con una foto. Si el rango no aparece, el
+   problema casi siempre es el `.env`: revisá que exista, que se llame
+   `.env` y que no tenga un BOM (si lo abriste con el Bloc de notas y
+   lo guardaste como "UTF-8 con BOM", la clave no se lee).
+
+### En Vercel
+
 ```bash
 npm run deploy
 ```
@@ -75,25 +116,23 @@ vercel --prod --yes   # o subilo directo con el CLI
 
 ### Variables de entorno
 
-Se definen en **Vercel → Project → Settings → Environment Variables**
-(marcando Production y Preview). También funcionan en local exportándolas.
-
 | Variable | Para qué | Obligatoria |
 |---|---|---|
 | `MINIMAX_API_KEY` | La clave de la API | Sí |
 | `MINIMAX_MODELO` | Modelo a usar (por defecto `MiniMax-M3.1-Flash`) | No |
 | `MINIMAX_BASE_URL` | Endpoint (por defecto `https://api.minimax.io/anthropic`) | No |
 
+En Vercel se definen en **Project → Settings → Environment Variables**.
+En el server con PHP van en el archivo `.env`.
+
 La clave **nunca va en el código**: vive solo en el servidor.
 
-### Auto-deploy desde GitHub
+### La ruta del endpoint
 
-Requiere instalar la GitHub App de Vercel para el repo:
-**https://vercel.com/account/integrations** → Vercel → Install → elegir
-`eclipse-ink`.
-
-Con eso, cada `git push` a `main` publica solo. Sin eso, hay que correr
-`npm run deploy`.
+El navegador prueba `/api/analizar` primero (Vercel) y si recibe un
+404 prueba `/api/analizar.php` (hosting con PHP), y se queda con la
+que funcione. Por eso el mismo sitio anda en los dos lugares sin
+cambiar nada.
 
 ---
 
