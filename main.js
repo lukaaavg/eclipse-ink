@@ -184,7 +184,7 @@ const MODO_MOCK = new URLSearchParams(location.search).get('ia') === 'mock';
   Vercel sirve /api/analizar (función de Node) y un server con PHP
   necesita /api/analizar.php. Así que se prueban las dos y se recuerda
   cuál anda, para no fallar en cada pedido.*/
-const ENDPOINT_ANALISIS = ['/api/analizar', '/api/analizar.php'];
+const ENDPOINT_ANALISIS = ['/api/analizar', '/api/analizar-php.php'];
 let endpointQueFunciona = null;
 
 /*Devuelve la ruta que responde. Si la que ya sabemos no funciona,

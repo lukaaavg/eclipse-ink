@@ -74,12 +74,12 @@ serverless.
    MINIMAX_API_KEY=sk-cp-...
    ```
 
-   Se puede bajar de `ejemplo-.env.txt`. **No le pongas `.txt` al
+   Se puede bajar de `ejemplo-env.txt`. **No le pongas `.txt` al
    final.** El archivo tiene que llamarse `.env` exactamente.
 3. Verificá que en `public_html` queden estas carpetas y archivos:
 
    ```
-   api/analizar.php      ← el endpoint
+   api/analizar-php.php  ← el endpoint
    api/config.php        ← lee la clave
    api/prompt.txt        ← las reglas del análisis
    index.html, contacto.html, portfolio.html, dashboard.html
@@ -130,7 +130,7 @@ La clave **nunca va en el código**: vive solo en el servidor.
 ### La ruta del endpoint
 
 El navegador prueba `/api/analizar` primero (Vercel) y si recibe un
-404 prueba `/api/analizar.php` (hosting con PHP), y se queda con la
+404 prueba `/api/analizar-php.php` (hosting con PHP), y se queda con la
 que funcione. Por eso el mismo sitio anda en los dos lugares sin
 cambiar nada.
 
