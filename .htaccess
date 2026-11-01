@@ -1,0 +1,28 @@
+# Configuracion propia de Eclipse Ink (vogelconsultoria.com.ar/eclipseink)
+#
+# El hosting sirve los .css y .js con 7 dias de cache, asi que un cambio
+# no se ve hasta que vence. Aca se fuerza a revalidar siempre.
+
+<IfModule mod_headers.c>
+    # CSS y JS: que siempre se revaliden
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "public, max-age=0, must-revalidate"
+    </FilesMatch>
+
+    # Imagenes: 1 semana, pero revalidando
+    <FilesMatch "\.(png|jpg|jpeg|svg|webp|ico)$">
+        Header set Cache-Control "public, max-age=604800, must-revalidate"
+    </FilesMatch>
+
+    # HTML: nunca cacheado
+    <FilesMatch "\.(html|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive Off
+</IfModule>
+
+# Que no se listan las carpetas
+Options -Indexes
