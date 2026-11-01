@@ -736,9 +736,21 @@ section h2 {
 
     transform: translate(-50%, -50%)
                translateX(calc(var(--offset) * var(--slide-gap)))
-               scale(clamp(0.3, calc(1 - var(--offset-abs) * 0.18), 1));
-    opacity: clamp(0, calc(1 - var(--offset-abs) * 0.4), 1);
-    filter: brightness(clamp(0.15, calc(1 - var(--offset-abs) * 0.5), 1));
+               scale(clamp(0.5, calc(1 - var(--offset-abs) * 0.14), 1));
+    /*La profundidad se hace con opacidad, escala y un brillo MUY suave.
+      Antes las vecinas caían a 0.6 x 0.5 = 0.30 contra el 1.0 de la
+      activa: un contraste de 3,3x que en pantallas brillantes hacía
+      parecer que la del centro estaba quemada.
+
+      Y el brightness aplastaba las sombras de la foto, que es
+      justo donde se pierden los detalles finos del trazo.
+
+      La activa baja a 0.94 a propósito: recorta los blancos al
+      límite sin mover un solo canal de color, así que la foto no
+      pierde detalle ni cambia de tono. En pantallas con brillo
+      evita el efecto quemado.*/
+    opacity: clamp(0, calc(1 - var(--offset-abs) * 0.34), 1);
+    filter: brightness(clamp(0.4, calc(1 - var(--offset-abs) * 0.2), 0.94));
     z-index: calc(10 - var(--offset-abs));
 
     transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
