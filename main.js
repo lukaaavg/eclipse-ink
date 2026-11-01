@@ -186,11 +186,16 @@ faqRows.forEach((row) => {
 const MODO_MOCK = new URLSearchParams(location.search).get('ia') === 'mock';
 
 /*Endpoint de la IA.
+  Rutas RELATIVAS a propósito: con barra inicial ("/api/...") el
+  navegador las resuelve desde la raiz del dominio y en un sitio que
+  vive en una subcarpeta (/eclipseink/) apuntaria a /api/... en vez
+  de /eclipseink/api/... y la calculadora no encontraria el endpoint.
+
   No todas las plataformas resuelven igual una ruta sin extensión:
-  Vercel sirve /api/analizar (función de Node) y un server con PHP
-  necesita /api/analizar.php. Así que se prueban las dos y se recuerda
-  cuál anda, para no fallar en cada pedido.*/
-const ENDPOINT_ANALISIS = ['/api/analizar', '/api/analizar-php.php'];
+  Vercel sirve api/analizar (funcion de Node) y un hosting con PHP
+  necesita api/analizar-php.php. Se prueban las dos y se recuerda
+  cual respondio, para no fallar en cada pedido.*/
+const ENDPOINT_ANALISIS = ['api/analizar', 'api/analizar-php.php'];
 let endpointQueFunciona = null;
 
 /*Devuelve la ruta que responde. Si la que ya sabemos no funciona,
@@ -203,13 +208,25 @@ async function resolverEndpoint() {
             const probe = await fetch(ruta, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                /* sin imagen: la función contesta 400, que sirve para
-                   saber que llegó. Un 404 significa que no hay nada. */
+                /* sin imagen: la funcion contesta 400, que sirve para
+                   saber que llego. Un 404 significa que no hay nada. */
                 body: JSON.stringify({ tarea: 'precio' }),
             });
-            if (probe.status !== 404) {
-                endpointQueFunciona = ruta;
-                return ruta;
+
+            if (probe.status === 404) continue;
+
+            /* El hosting puede devolver el HTML de su pagina de
+               error en vez de un 404. Hay que confirmar que lo que
+               contesto es NUESTRO json, no una pagina cualquiera. */
+            try {
+                const json = await probe.json();
+                if (json && json.ok === false && typeof json.error === 'string') {
+                    endpointQueFunciona = ruta;
+                    return ruta;
+                }
+            } catch (e) {
+                /* respondio algo que no es json: no es nuestro endpoint */
+                continue;
             }
         } catch (e) {
             /* sigue con la otra */

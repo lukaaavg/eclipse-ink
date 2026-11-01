@@ -207,7 +207,10 @@ function validar_datos(?array $datos): ?array
         foreach ($datos['detalle'] as $d) {
             if (!is_string($d)) { continue; }
             $d = limpiar_texto($d);
-            if ($d === '' || mb_strlen($d) < 4 || mb_strlen($d) > 60) { continue; }
+            /* mbstring puede no estar cargada en el hosting: se mide
+               con strlen como respaldo para que el endpoint no muera. */
+            $largo = function_exists('mb_strlen') ? mb_strlen($d) : strlen($d);
+            if ($d === '' || $largo < 4 || $largo > 80) { continue; }
             if (texto_roto($d)) { continue; }
             $limpias[] = $d;
         }
