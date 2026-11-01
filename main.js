@@ -54,11 +54,17 @@ const carouselTrack = document.querySelector('#carouselTrack');
 const carouselPrev = document.querySelector('#carouselPrev');
 const carouselNext = document.querySelector('#carouselNext');
 const carouselCounter = document.querySelector('#carouselCounter');
+const carouselTotal = document.querySelector('#carouselTotal');
 
 if (carouselTrack && carouselPrev && carouselNext) {
     const slides = Array.from(carouselTrack.querySelectorAll('.carousel-slide'));
     const total = slides.length;
     let current = 0;
+
+    /*El total se cuenta solo: si se agrega o se saca una foto, el
+      contador no hay que tocarlo a mano.*/
+    if (carouselTotal) carouselTotal.textContent = total;
+
 
     function updateCarousel() {
         slides.forEach((slide, i) => {
